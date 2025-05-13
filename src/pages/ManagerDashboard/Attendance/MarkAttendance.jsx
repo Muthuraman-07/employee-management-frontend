@@ -10,7 +10,7 @@ const Attendance = () => {
   const [showModal, setShowModal] = useState(false);
   const [employeeId, setEmployeeId] = useState(null);
 
-  const username = localStorage.getItem("username"); // Fetch username from localStorage
+  const username = localStorage.getItem("username");
 
   useEffect(() => {
     const fetchEmployeeId = async () => {
@@ -56,14 +56,6 @@ const Attendance = () => {
     }
   };
 
-  // const calculateWorkingHours = (checkIn, checkOut) => {
-  //   if (!checkIn || !checkOut) return "Incomplete";
-  //   const checkInTime = new Date(`${date}T${checkIn}:00`);
-  //   const checkOutTime = new Date(`${date}T${checkOut}:00`);
-  //   const diff = (checkOutTime - checkInTime) / (1000 * 60 * 60);
-  //   return diff.toFixed(2);
-  // };
-
   const handleSingleEntrySubmit = async () => {
     if (!date || !employeeId) {
       alert("Error: Missing required fields.");
@@ -76,7 +68,6 @@ const Attendance = () => {
       return;
     }
 
-    // Ensure correct time format
     const formattedCheckIn = `${date}T${clockInTime}:00`;
     const formattedCheckOut = `${date}T${clockOutTime}:00`;
 
@@ -86,8 +77,8 @@ const Attendance = () => {
     };
 
     try {
-      await api.post(`/attendance/attendanceRecords/${employeeId}`, newEntry); // Send data to backend
-      setEntries([...entries, newEntry]); // Update UI
+      await api.post(`/attendance/attendanceRecords/${employeeId}`, newEntry); 
+      setEntries([...entries, newEntry]);
       setShowModal(false);
       setDate("");
       setCheckIn("");
@@ -100,79 +91,26 @@ const Attendance = () => {
     }
   };
 
-  // const handleEditAttendance = (index) => {
-  //   const entryToEdit = entries[index];
-  //   setDate(entryToEdit.date);
-  //   setCheckIn(entryToEdit.clockInTime || "");
-  //   setCheckOut(entryToEdit.clockOutTime || "");
-  //   setEditIndex(index);
-  //   setShowModal(true);
-  // };
-
-  // const handleDeleteAttendance = (index) => {
-  //   if (window.confirm("Are you sure you want to delete this entry?")) {
-  //     setEntries(entries.filter((_, i) => i !== index));
-  //   }
-  // };
-
   return (
     <div className="container py-5">
       <h1 className="mb-4 text-primary fw-bold">Employee Attendance</h1>
-      <button
-        className="btn btn-outline-primary btn-md rounded-pill mb-4"
-        onClick={handleMarkAttendance}
-      >
-        <i className="bi bi-calendar-plus me-1"></i> Mark Attendance
-      </button>
 
-      {/* {entries.length > 0 && (
-        <div className="card shadow-sm mb-4">
-          <div className="card-header bg-light py-3">
-            <h5 className="mb-0 fw-bold text-info">
-              <i className="bi bi-list-check me-2"></i> Attendance Log
-            </h5>
-          </div>
-          <div className="card-body">
-            <div className="table-responsive">
-              <table className="table table-bordered table-hover">
-                <thead className="table-light">
-                  <tr>
-                    <th className="text-center">Date</th>
-                    <th className="text-center">Check-In</th>
-                    <th className="text-center">Check-Out</th>
-                    <th className="text-center">Working Hours</th>
-                    <th className="text-center">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {entries.map((entry, index) => (
-                    <tr key={index}>
-                      <td className="text-center fw-semibold">{entry.date}</td>
-                      <td className="text-center">{entry.checkIn}</td>
-                      <td className="text-center">{entry.checkOut}</td>
-                      <td className="text-center">{entry.workingHours}</td>
-                      <td className="text-center">
-                        <button
-                          className="btn btn-sm btn-outline-warning rounded-pill me-2"
-                          onClick={() => handleEditAttendance(index)}
-                        >
-                          <i className="bi bi-pencil"></i> Edit
-                        </button>
-                        <button
-                          className="btn btn-sm btn-outline-danger rounded-pill"
-                          onClick={() => handleDeleteAttendance(index)}
-                        >
-                          <i className="bi bi-trash"></i> Delete
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      )} */}
+      {/* ✅ Updated: "View Attendance" Link Beside "Mark Attendance" */}
+      <div className="d-flex gap-3">
+        <button
+          className="btn btn-outline-primary btn-md rounded-pill"
+          onClick={handleMarkAttendance}
+        >
+          <i className="bi bi-calendar-plus me-1"></i> Mark Attendance
+        </button>
+
+        <a
+          href={`/viewAttendance`}
+          className="btn btn-outline-secondary btn-md rounded-pill"
+        >
+          <i className="bi bi-eye"></i> View Attendance
+        </a>
+      </div>
 
       {showModal && (
         <div className="modal fade show" style={{ display: "block", backgroundColor: "rgba(0,0,0,0.5)" }} tabIndex="-1" aria-labelledby="addEditModalLabel" aria-modal="true" role="dialog">

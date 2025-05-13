@@ -43,11 +43,11 @@ const Shift = () => {
       <h2>Shift Management</h2>
       
       <div className="shift-links">
-        <button onClick={() => navigate("/create-shift")}>Create Shift</button>
-        <button onClick={() => navigate("/allocated-shift")}>Allocated Shift</button>
-        <button onClick={() => navigate("/available-shift")}>Available Shift</button>
-        <button onClick={() => navigate("/shift-changes")}>Shift Changes</button>
-        <button onClick={() => navigate("/shift-swap-requests")}>Shift Swap Requests</button>
+        <button onClick={() => navigate("/createShift")}>Create Shift</button>
+        <button onClick={() => navigate("/allocatedShift")}>Allocated Shift</button>
+        <button onClick={() => navigate("/getAllShift")}>Available Shift</button>
+        <button onClick={() => navigate("/updateShift")}>Shift Changes</button>
+        <button onClick={() => navigate("/shiftSwapRequests")}>Shift Swap Requests</button>
       </div>
 
       {/* <div className="shift-info">

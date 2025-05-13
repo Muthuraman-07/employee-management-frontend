@@ -11,7 +11,7 @@ const EmployeeDashboard = () => {
   useEffect(() => {
     const fetchEmployeeData = async () => {
       try {
-        const response = await api.get(`/employee-username/${username}`); // Fetch employee details
+        const response = await api.get(`/employee/employee-username/${username}`); // Fetch employee details
         setData(response.data);
       } catch (error) {
         console.error('Error fetching employee data:', error);
@@ -59,21 +59,15 @@ const EmployeeDashboard = () => {
           <li onClick={() => navigate('/leave')}>
             <i className="icon"></i> Leave Requests
           </li>
-          <li onClick={() => navigate('/shift')}>
+          <li onClick={() => navigate('/empShift')}>
             <i className="icon"></i> Shift Details
-          </li>
-          <li onClick={() => navigate('/projects')}>
-            <i className="icon"></i> Projects & Tasks
-          </li>
-          <li onClick={() => navigate('/performance')}>
-            <i className="icon"></i> Performance Evaluation
           </li>
           <li className="logout-button" onClick={handleLogout}>Logout</li>
         </ul>
       </div>
 
       {/* Main Content */}
-      {/* <div className="main-content">
+      <div className="main-content">
         <h2>Welcome to Your Employee Dashboard</h2>
         <div className="content">
           <img src="/employee.jpg" alt="Employee Workspace" />
@@ -105,7 +99,7 @@ const EmployeeDashboard = () => {
             <li>Participate in <strong>team-building activities</strong> for collaboration.</li>
           </ul>
         </div>
-      </div> */}
+      </div>
     </div>
   );
 };

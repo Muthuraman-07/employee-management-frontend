@@ -46,7 +46,7 @@ const ManagerDashboard = () => {
       </div>
 
       {/* Main Content */}
-      {/* <div className="main-content">
+      <div className="main-content">
         <h2>About Company</h2>
         <div className="content">
   <img src="/manager.jpg" alt="Presentation Board" />
@@ -102,7 +102,7 @@ const ManagerDashboard = () => {
   </p>
 </div>
 
-      </div> */}
+      </div>
     </div>
   );
 };

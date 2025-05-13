@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { api } from "../../../service/api";
-import "./ApplyLeave.css";
+// import "./ApplyLeave.css";
 
 const ApplyLeave = () => {
   const [leave, setLeave] = useState({ startDate: "", endDate: "", leaveType: "Vacation" }); // Default selection

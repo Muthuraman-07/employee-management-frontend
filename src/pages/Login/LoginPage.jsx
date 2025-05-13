@@ -120,7 +120,7 @@ const LoginPage = () => {
           </form>
         </div>
         <div className="login-info">
-          <img src="/employee-management-logo.png" alt="sample" />
+          <img src="/logo.gif" alt="sample" />
         </div>
       </div>
     </div>
