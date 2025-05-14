@@ -6,60 +6,66 @@ import "bootstrap/dist/css/bootstrap.min.css"; // Ensure Bootstrap is included
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const ShiftSwapRequests = () => {
-  const [shiftRequests, setShiftRequests] = useState([]);
+const PendingLeaveRequests = () => {
+  const [leaveRequests, setLeaveRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const fetchShiftRequests = async () => {
+    const fetchLeaveRequests = async () => {
       try {
-        console.log("Fetching pending shift swap requests...");
-        const response = await api.get("/shifts/request-status", { params: { status: "PENDING" } });
+        console.log("Fetching pending leave requests...");
+        const response = await api.get(`/leave/leave-history-by-status/Pending`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("jwtToken")}`,
+          },
+        });
+
         console.log("API Response:", response.data); // ✅ Debugging Response
-        setShiftRequests(response.data);
+        setLeaveRequests(response.data);
       } catch (error) {
-        console.error("Error fetching shift swap requests:", error);
-        setError("Failed to fetch shift swap requests.");
+        console.error("Error fetching leave requests:", error);
+        setError("Failed to fetch leave requests.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchShiftRequests();
+    fetchLeaveRequests();
   }, []);
 
-  const handleAction = async (requestId, approved, employeeId) => {
+  const handleAction = async (leaveId, status) => {
     try {
-      console.log(`Updating shift request ID: ${requestId}, Approved: ${approved}`);
+      console.log(`Updating leave request ID: ${leaveId}, Status: ${status}`);
 
-      await api.post("/shifts/approve-swap", null, { params: { requestId, approved } });
-
-      // ✅ Save approval/rejection in local storage for employee notification
-      localStorage.setItem(`shiftSwap_${employeeId}`, approved ? "APPROVED" : "REJECTED");
+      await api.patch(`leave/approve-leaveRequest/${leaveId}/${status}`, null, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("jwtToken")}`,
+        },
+      });
 
       // ✅ Show success notification for the manager
-      toast.success(`Shift swap request ${approved ? "approved" : "rejected"}! ✅`, {
+      toast.success(`Leave request ${status === "APPROVED" ? "approved" : "rejected"}! ✅`, {
         position: "top-right",
         autoClose: 3000,
       });
 
       // ✅ Update UI after approval/rejection
-      setShiftRequests((prevRequests) =>
+      setLeaveRequests((prevRequests) =>
         prevRequests.map((request) =>
-          request.id === requestId
-            ? { ...request, status: approved ? "APPROVED" : "REJECTED", approvedByManager: !!approved }
+          request.leaveId === leaveId
+            ? { ...request, status }
             : request
         )
       );
 
     } catch (error) {
-      console.error("Error updating shift request:", error);
-      setError("Failed to update shift request.");
+      console.error("Error updating leave request:", error);
+      setError("Failed to update leave request.");
     }
   };
 
-  if (loading) return <p className="text-center text-primary">Loading pending shift requests...</p>;
+  if (loading) return <p className="text-center text-primary">Loading pending leave requests...</p>;
   if (error) return <p className="text-center text-danger">{error}</p>;
 
   return (
@@ -69,37 +75,41 @@ const ShiftSwapRequests = () => {
 
       <div className="card shadow-lg">
         <div className="card-header bg-dark text-white text-center">
-          <h2>Pending Shift Swap Requests</h2>
+          <h2>Pending Leave Requests</h2>
         </div>
         <div className="card-body">
-          {shiftRequests.length === 0 ? (
-            <p className="text-center text-warning">No pending shift swap requests found.</p>
+          {leaveRequests.length === 0 ? (
+            <p className="text-center text-warning">No pending leave requests found.</p>
           ) : (
             <div className="table-responsive mt-4">
               <table className="table table-bordered table-hover">
                 <thead className="table-dark text-white">
                   <tr>
-                    <th>Request ID</th>
-                    <th>Requested Shift ID</th>
+                    <th>Leave ID</th>
                     <th>Employee ID</th>
+                    <th>Leave Type</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
                     <th>Status</th>
                     <th>Approve</th>
                     <th>Reject</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {shiftRequests.map((request, index) => (
+                  {leaveRequests.map((request, index) => (
                     <tr key={index} className="text-center">
-                      <td className="fw-bold">{request.id}</td>
-                      <td>{request.requestedShiftId}</td> {/* ✅ Uses DTO Property */}
-                      <td>{request.employee.employeeId}</td>
+                      <td className="fw-bold">{request.leaveId}</td>
+                      <td>{request.employeeId}</td>
+                      <td>{request.leaveType}</td>
+                      <td>{new Date(request.startDate).toLocaleDateString()}</td>
+                      <td>{new Date(request.endDate).toLocaleDateString()}</td>
                       <td className={request.status === "APPROVED" ? "text-success fw-bold" : "text-warning fw-bold"}>
                         {request.status}
                       </td>
                       <td>
                         <button
                           className="btn btn-success fw-bold"
-                          onClick={() => handleAction(request.id, 1, request.employee.employeeId)}
+                          onClick={() => handleAction(request.leaveId, "APPROVED")}
                           disabled={request.status === "APPROVED"} // ✅ Disable if already approved
                         >
                           Approve
@@ -108,7 +118,7 @@ const ShiftSwapRequests = () => {
                       <td>
                         <button
                           className="btn btn-danger fw-bold"
-                          onClick={() => handleAction(request.id, 0, request.employee.employeeId)}
+                          onClick={() => handleAction(request.leaveId, "REJECTED")}
                           disabled={request.status === "REJECTED"} // ✅ Disable if already rejected
                         >
                           Reject
@@ -126,4 +136,4 @@ const ShiftSwapRequests = () => {
   );
 };
 
-export default ShiftSwapRequests;
+export default PendingLeaveRequests;

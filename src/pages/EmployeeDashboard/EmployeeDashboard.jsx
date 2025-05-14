@@ -1,11 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import './EmployeeDashboard.css';
-import { api } from '../../service/api';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import "./EmployeeDashboard.css";
+import { api } from "../../service/api";
+import { useNavigate } from "react-router-dom";
+
+// ✅ Import Toastify for notifications
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const EmployeeDashboard = () => {
   const [data, setData] = useState({});
-  const username = localStorage.getItem('username'); // Fetch username from local storage
+  const username = localStorage.getItem("username"); // Fetch username from local storage
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -14,17 +18,32 @@ const EmployeeDashboard = () => {
         const response = await api.get(`/employee/employee-username/${username}`); // Fetch employee details
         setData(response.data);
       } catch (error) {
-        console.error('Error fetching employee data:', error);
+        console.error("Error fetching employee data:", error);
       }
     };
 
     fetchEmployeeData();
   }, [username]);
 
+  // ✅ Show shift swap notification on login
+  useEffect(() => {
+    const swapStatus = localStorage.getItem(`shiftSwap_${data.employeeId}`);
+
+    if (swapStatus) {
+      toast.info(`Your shift swap request was ${swapStatus}.`, {
+        position: "top-right",
+        autoClose: 3000,
+      });
+
+      // ✅ Clear notification after showing once
+      localStorage.removeItem(`shiftSwap_${data.employeeId}`);
+    }
+  }, [data]);
+
   // 🔹 Prevent Back Navigation
   useEffect(() => {
     window.history.pushState(null, "", window.location.href);
-    
+
     const handleBackButton = (event) => {
       event.preventDefault();
       window.history.pushState(null, "", window.location.href);
@@ -39,30 +58,35 @@ const EmployeeDashboard = () => {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem('username');
-    localStorage.removeItem('jwtToken'); // Remove token if stored
+    localStorage.removeItem("username");
+    localStorage.removeItem("jwtToken"); // Remove token if stored
     console.log("Logged out");
-    navigate('/'); // Redirect to login page
+    navigate("/"); // Redirect to login page
   };
 
   return (
     <div className="dashboard">
+      {/* ✅ Toast Notifications */}
+      <ToastContainer position="top-right" autoClose={3000} />
+
       {/* Sidebar Navigation */}
       <div className="sidebar">
         <ul>
-          <li onClick={() => navigate('/profile')} className="active">
+          <li onClick={() => navigate("/profile")} className="active">
             <i className="icon"></i> Profile
           </li>
-          <li onClick={() => navigate('/attendance')}>
+          <li onClick={() => navigate("/attendance")}>
             <i className="icon"></i> Attendance
           </li>
-          <li onClick={() => navigate('/leave')}>
+          <li onClick={() => navigate("/empLeave")}>
             <i className="icon"></i> Leave Requests
           </li>
-          <li onClick={() => navigate('/empShift')}>
+          <li onClick={() => navigate("/empShift")}>
             <i className="icon"></i> Shift Details
           </li>
-          <li className="logout-button" onClick={handleLogout}>Logout</li>
+          <li className="logout-button" onClick={handleLogout}>
+            Logout
+          </li>
         </ul>
       </div>
 
@@ -70,7 +94,7 @@ const EmployeeDashboard = () => {
       <div className="main-content">
         <h2>Welcome to Your Employee Dashboard</h2>
         <div className="content">
-          <img src="/employee.jpg" alt="Employee Workspace" />
+          <img src="/emp1.gif" alt="Employee Workspace" />
           <p>
             This dashboard gives employees access to key details regarding attendance, leave requests, shifts,
             and assigned projects. Stay connected, track progress, and manage your work-life balance efficiently.
@@ -78,12 +102,24 @@ const EmployeeDashboard = () => {
 
           <h3>Work & Responsibilities</h3>
           <ul>
-            <li><strong>Profile Management:</strong> Keep your details up to date.</li>
-            <li><strong>Attendance Tracking:</strong> Monitor your work hours.</li>
-            <li><strong>Leave Requests:</strong> Apply and check leave status.</li>
-            <li><strong>Shift Information:</strong> View and manage your assigned shifts.</li>
-            <li><strong>Project Assignments:</strong> Stay updated on tasks.</li>
-            <li><strong>Performance Metrics:</strong> Receive feedback and track growth.</li>
+            <li>
+              <strong>Profile Management:</strong> Keep your details up to date.
+            </li>
+            <li>
+              <strong>Attendance Tracking:</strong> Monitor your work hours.
+            </li>
+            <li>
+              <strong>Leave Requests:</strong> Apply and check leave status.
+            </li>
+            <li>
+              <strong>Shift Information:</strong> View and manage your assigned shifts.
+            </li>
+            <li>
+              <strong>Project Assignments:</strong> Stay updated on tasks.
+            </li>
+            <li>
+              <strong>Performance Metrics:</strong> Receive feedback and track growth.
+            </li>
           </ul>
 
           <h3>Company Announcements</h3>

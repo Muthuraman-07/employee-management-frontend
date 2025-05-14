@@ -27,6 +27,9 @@ import AttendanceReports from './pages/Reports/AttendanceReport.jsx';
 import ShiftReports from './pages/Reports/ShiftReport.jsx';
 import LeaveReports from './pages/Reports/LeaveReport.jsx';
 import EmployeeReports from './pages/Reports/EmployeeReport.jsx';
+import EditProfile from './pages/EmployeeDashboard/EditProfile.jsx';
+import EmpLeave from './pages/EmployeeDashboard/EmpLeave/EmpLeave.jsx';
+import PendingLeaveRequests from './pages/ManagerDashboard/Leave/PendingLeaveRequests.jsx';
 function App() {
   // const token = localStorage.getItem('token');
   // const role = localStorage.getItem('role');
@@ -62,6 +65,9 @@ function App() {
          <Route path="/reports/shift" element={<ShiftReports/>}/>
          <Route path="/reports/leave" element={<LeaveReports/>}/>
          <Route path="/reports/employee" element={<EmployeeReports/>}/>
+         <Route path="/edit-profile" element={<EditProfile/>}/>
+         <Route path="/empLeave" element={<EmpLeave/>}/>
+         <Route path="/pendingLeaveRequests" element={<PendingLeaveRequests/>}/>
       </Routes>
       </div>
       

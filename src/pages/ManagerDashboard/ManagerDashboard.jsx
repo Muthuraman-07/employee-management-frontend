@@ -49,7 +49,7 @@ const ManagerDashboard = () => {
       <div className="main-content">
         <h2>About Company</h2>
         <div className="content">
-  <img src="/manager.jpg" alt="Presentation Board" />
+  <img src="/manager.gif" alt="Presentation Board" />
   
   <p>
     As a global leader in digital transformation and technology solutions, we drive innovation, deliver strategic consulting, and empower businesses worldwide.

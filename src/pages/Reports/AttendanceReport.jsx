@@ -1,28 +1,26 @@
-import React, { useState } from 'react';
-import { api } from '../../service/api';
-import { exportToPDF, exportToExcel } from '../../utils/exportUtils';
+import React, { useState } from "react";
+import { api } from "../../service/api";
+import { exportToPDF, exportToExcel } from "../../utils/exportUtils";
+import "bootstrap/dist/css/bootstrap.min.css"; // Ensure Bootstrap is included
 
 const AttendanceReports = () => {
-  const [reportType, setReportType] = useState('all');
-  const [dateRange, setDateRange] = useState('');
-  const [employee, setEmployee] = useState('');
+  const [reportType, setReportType] = useState("all");
+  const [employee, setEmployee] = useState("");
   const [reportData, setReportData] = useState([]);
 
   const generateReport = async () => {
     try {
       let response;
 
-      if (reportType === 'all') {
+      if (reportType === "all") {
         response = await api.get(`attendance/all-records`);
-      } else if (reportType === 'date') {
-        response = await api.get(`attendance/by-date?range=${dateRange}`);
-      } else if (reportType === 'employee') {
-        response = await api.get(`attendance/employee/${employee}`);
+      } else if (reportType === "employee") {
+        response = await api.get(`attendance/all-records/${employee}`);
       }
 
       setReportData(response.data);
     } catch (error) {
-      console.error('Error generating report:', error);
+      console.error("Error generating report:", error);
     }
   };
 
@@ -39,25 +37,11 @@ const AttendanceReports = () => {
             onChange={(e) => setReportType(e.target.value)}
           >
             <option value="all">All Employees</option>
-            <option value="date">By Date Range</option>
             <option value="employee">By Employee ID</option>
           </select>
         </div>
 
-        {reportType === 'date' && (
-          <div className="col-md-4">
-            <label className="form-label">Date Range</label>
-            <input
-              type="text"
-              className="form-control"
-              placeholder="YYYY-MM-DD to YYYY-MM-DD"
-              value={dateRange}
-              onChange={(e) => setDateRange(e.target.value)}
-            />
-          </div>
-        )}
-
-        {reportType === 'employee' && (
+        {reportType === "employee" && (
           <div className="col-md-4">
             <label className="form-label">Employee ID</label>
             <input
@@ -65,6 +49,7 @@ const AttendanceReports = () => {
               className="form-control"
               value={employee}
               onChange={(e) => setEmployee(e.target.value)}
+              placeholder="Enter Employee ID"
             />
           </div>
         )}
@@ -74,10 +59,10 @@ const AttendanceReports = () => {
         <button className="btn btn-primary me-2" onClick={generateReport}>
           Generate Report
         </button>
-        <button className="btn btn-primary me-2" onClick={() => exportToPDF('attendanceReport')}>
+        <button className="btn btn-primary me-2" onClick={() => exportToPDF("attendanceReport")}>
           Export to PDF
         </button>
-        <button className="btn btn-primary me-2" onClick={() => exportToExcel('attendanceReport')}>
+        <button className="btn btn-primary me-2" onClick={() => exportToExcel("attendanceReport")}>
           Export to Excel
         </button>
       </div>
@@ -99,7 +84,7 @@ const AttendanceReports = () => {
               <tr key={index}>
                 <td>{item.attendanceID}</td>
                 <td>{item.employeeId}</td>
-                <td>{item.isPresent ? 'Yes' : 'No'}</td>
+                <td>{item.isPresent ? "Yes" : "No"}</td>
                 <td>{new Date(item.clockInTime).toLocaleTimeString()}</td>
                 <td>{new Date(item.clockOutTime).toLocaleTimeString()}</td>
                 <td>{item.workHours}</td>
