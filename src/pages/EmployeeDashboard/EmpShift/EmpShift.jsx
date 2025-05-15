@@ -37,7 +37,7 @@ const Shift = () => {
       <h2>Shift Management</h2>
       
       <div className="shift-links">
-        <button onClick={() => navigate("/createShift")} className="btn btn-warning fw-bold">Create Shift</button>
+        {/* <button onClick={() => navigate("/createShift")} className="btn btn-warning fw-bold">Create Shift</button> */}
         <button onClick={() => navigate("/allocatedShift")} className="btn btn-warning fw-bold">Allocated Shift</button>
         <button onClick={() => navigate("/getAllShift")} className="btn btn-warning fw-bold">Available Shift</button>
         <button onClick={() => navigate("/shiftSwap")} className="btn btn-warning fw-bold">Shift Swap</button>

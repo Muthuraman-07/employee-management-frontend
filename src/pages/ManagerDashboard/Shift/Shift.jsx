@@ -1,109 +1,135 @@
 import React, { useEffect, useState } from "react";
 import { api } from "../../../service/api";
 import { useNavigate } from "react-router-dom";
+import {
+  Container,
+  Button,
+  TextField,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Box,
+  Typography,
+  Grid,
+} from "@mui/material"; // ✅ Material UI components
+import DeleteIcon from "@mui/icons-material/Delete"; // ✅ MUI Delete Icon
 import "./Shift.css";
 
 const Shift = () => {
-  const [allocatedShifts, setAllocatedShifts] = useState([]);
-  const [availableShifts, setAvailableShifts] = useState([]);
-  const [shiftChanges, setShiftChanges] = useState([]);
-  const [shiftSwapRequests, setShiftSwapRequests] = useState([]);
+  const [showDeletePopup, setShowDeletePopup] = useState(false);
+  const [shiftId, setShiftId] = useState("");
   const navigate = useNavigate();
   const employeeId = localStorage.getItem("employeeId");
 
-  useEffect(() => {
-    const fetchShiftData = async () => {
-      try {
-        if (!employeeId) {
-          console.error("No employee ID found.");
-          return;
-        }
+  const handleDeletePopup = () => {
+    setShowDeletePopup(true);
+  };
 
-        const response = await api.get(`/shift/allocated/${employeeId}`);
-        setAllocatedShifts(response.data);
+  const confirmDeleteShift = async () => {
+    if (!shiftId || isNaN(shiftId)) {
+      alert("Please enter a valid Shift ID.");
+      return;
+    }
 
-        const availableResponse = await api.get(`/shift/available`);
-        setAvailableShifts(availableResponse.data);
+    try {
+      await api.delete(`/delete-shift/${shiftId}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("jwtToken")}`, // ✅ Ensure authorization
+        },
+      });
 
-        const changesResponse = await api.get(`/shift/changes/${employeeId}`);
-        setShiftChanges(changesResponse.data);
-
-        const swapResponse = await api.get(`/shift/swap-requests/${employeeId}`);
-        setShiftSwapRequests(swapResponse.data);
-      } catch (error) {
-        console.error("Error fetching shift data:", error);
-      }
-    };
-
-    fetchShiftData();
-  }, [employeeId]);
+      alert(`Shift ID ${shiftId} has been deleted successfully!`);
+      console.log(`Shift ${shiftId} deleted.`);
+      setShowDeletePopup(false);
+    } catch (error) {
+      console.error("Error deleting shift:", error.response?.data || error.message);
+      alert("Failed to delete shift. Please try again.");
+    }
+  };
 
   return (
-    <div className="shift-dashboard">
-      <h2>Shift Management</h2>
-      
-      <div className="shift-links">
-        <button onClick={() => navigate("/createShift")}>Create Shift</button>
-        <button onClick={() => navigate("/allocatedShift")}>Allocated Shift</button>
-        <button onClick={() => navigate("/getAllShift")}>Available Shift</button>
-        <button onClick={() => navigate("/updateShift")}>Shift Changes</button>
-        <button onClick={() => navigate("/shiftSwapRequests")}>Shift Swap Requests</button>
-      </div>
+    <Container
+      maxWidth="md"
+      sx={{
+        py: 4,
+        background: "linear-gradient(135deg, #1e3a8a, #3b82f6)",
+        borderRadius: 3,
+        color: "white",
+        boxShadow: 3,
+        textAlign: "center",
+      }}
+    >
+      {/* Title */}
+      <Typography variant="h4" fontWeight="bold" mb={4}>
+        Shift Management
+      </Typography>
 
-      {/* <div className="shift-info">
-        <h3>Allocated Shifts</h3>
-        {allocatedShifts.length > 0 ? (
-          <ul>
-            {allocatedShifts.map((shift) => (
-              <li key={shift.id}>
-                {shift.startTime} - {shift.endTime} ({shift.shiftType})
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p>No allocated shifts available.</p>
-        )}
+      {/* Shift Navigation Buttons */}
+      <Grid container spacing={2} justifyContent="center">
+        <Grid item>
+          <Button variant="contained" sx={{ background: "#1e40af", color: "white" }} onClick={() => navigate("/createShift")}>
+            Create Shift
+          </Button>
+        </Grid>
+        <Grid item>
+          <Button variant="contained" sx={{ background: "#2563eb", color: "white" }} onClick={() => navigate("/allocatedShift")}>
+            Allocated Shift
+          </Button>
+        </Grid>
+        <Grid item>
+          <Button variant="contained" sx={{ background: "#60a5fa", color: "white" }} onClick={() => navigate("/getAllShift")}>
+            Available Shift
+          </Button>
+        </Grid>
+        <Grid item>
+          <Button variant="contained" sx={{ background: "#93c5fd", color: "black" }} onClick={() => navigate("/updateShift")}>
+            Shift Changes
+          </Button>
+        </Grid>
+        <Grid item>
+          <Button variant="contained" sx={{ background: "#bfdbfe", color: "black" }} onClick={() => navigate("/shiftSwapRequests")}>
+            Shift Swap Requests
+          </Button>
+        </Grid>
+        <Grid item>
+          <Button
+            variant="contained"
+            sx={{ backgroundColor: "red", color: "white", fontWeight: "bold", boxShadow: 3 }}
+            startIcon={<DeleteIcon />}
+            onClick={handleDeletePopup}
+          >
+            Delete Shift
+          </Button>
+        </Grid>
+      </Grid>
 
-        <h3>Available Shifts</h3>
-        {availableShifts.length > 0 ? (
-          <ul>
-            {availableShifts.map((shift) => (
-              <li key={shift.id}>
-                {shift.startTime} - {shift.endTime} ({shift.shiftType})
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p>No available shifts.</p>
-        )}
-
-        <h3>Shift Changes</h3>
-        {shiftChanges.length > 0 ? (
-          <ul>
-            {shiftChanges.map((change) => (
-              <li key={change.id}>
-                Requested: {change.requestedShift} - Status: <strong>{change.status}</strong>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p>No shift changes requested.</p>
-        )}
-
-        <h3>Shift Swap Requests</h3>
-        {shiftSwapRequests.length > 0 ? (
-          <ul>
-            {shiftSwapRequests.map((swap) => (
-              <li key={swap.id}>
-                {swap.employeeName} requested swap from {swap.currentShift} to {swap.requestedShift} - <strong>{swap.status}</strong>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p>No shift swap requests.</p>
-        )}
-      </div> */}
-    </div>
+      {/* ✅ Fancy Delete Shift Modal */}
+      <Dialog open={showDeletePopup} onClose={() => setShowDeletePopup(false)}>
+        <DialogTitle sx={{ backgroundColor: "red", color: "white", fontWeight: "bold" }}>
+          Confirm Shift Deletion
+        </DialogTitle>
+        <DialogContent>
+          <TextField
+            label="Shift ID"
+            type="number"
+            fullWidth
+            variant="outlined"
+            value={shiftId}
+            sx={{ mt: 2 }}
+            onChange={(e) => setShiftId(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowDeletePopup(false)} variant="outlined" color="secondary">
+            Cancel
+          </Button>
+          <Button onClick={confirmDeleteShift} sx={{ backgroundColor: "red", color: "white" }} variant="contained">
+            Delete Shift
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Container>
   );
 };
 
