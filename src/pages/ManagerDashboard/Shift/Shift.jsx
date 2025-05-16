@@ -22,7 +22,7 @@ const Shift = () => {
     }
 
     try {
-      await api.delete(`/delete-shift/${shiftId}`, {
+      await api.delete(`shifts/delete-shift/${shiftId}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("jwtToken")}`, 
         },

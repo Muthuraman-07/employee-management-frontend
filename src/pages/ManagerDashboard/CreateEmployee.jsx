@@ -4,7 +4,7 @@ import "./CreateEmployee.css";
 
 const RegisterEmployee = () => {
   const [employee, setEmployee] = useState({
-    employeeId: "", 
+    employeeId: "",
     managerId: localStorage.getItem("employeeId") || "", // Auto-filled from logged-in user
     firstName: "",
     lastName: "",
@@ -17,8 +17,6 @@ const RegisterEmployee = () => {
     shiftId: "",
     joinedDate: ""
   });
-
-  
 
   useEffect(() => {
     // Fetch logged-in employee details and update managerId
@@ -40,8 +38,76 @@ const RegisterEmployee = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validation Patterns
+    const phoneRegex = /^\d{10}$/;
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    // Validation Rules
+    if (employee.employeeId < 1) {
+      alert("Employee ID must be greater than zero.");
+      return;
+    }
+
+    if (employee.managerId < 1) {
+      alert("Manager ID must be greater than zero.");
+      return;
+    }
+
+    if (employee.username.length < 2 || employee.username.length > 50) {
+      alert("Username must be between 2 and 50 characters.");
+      return;
+    }
+
+    if (!passwordRegex.test(employee.password)) {
+      alert("Password must contain at least one uppercase letter, one lowercase letter, and one number.");
+      return;
+    }
+
+    if (employee.password.length < 8) {
+      alert("Password must be at least 8 characters long.");
+      return;
+    }
+
+    if (employee.firstName.length < 2 || employee.firstName.length > 50) {
+      alert("First name must be between 2 and 50 characters.");
+      return;
+    }
+
+    if (employee.lastName.length < 2 || employee.lastName.length > 50) {
+      alert("Last name must be between 2 and 50 characters.");
+      return;
+    }
+
+    if (!emailRegex.test(employee.email)) {
+      alert("Email should be valid.");
+      return;
+    }
+
+    if (!phoneRegex.test(employee.phoneNumber)) {
+      alert("Phone number must be exactly 10 digits.");
+      return;
+    }
+
+    if (employee.department.length < 2 || employee.department.length > 50) {
+      alert("Department must be between 2 and 50 characters.");
+      return;
+    }
+
+    if (employee.role.length < 2 || employee.role.length > 50) {
+      alert("Role must be between 2 and 50 characters.");
+      return;
+    }
+
+    const today = new Date().toISOString().split("T")[0];
+    if (employee.joinedDate >= today) {
+      alert("Joined date must be in the past.");
+      return;
+    }
+
     try {
-      const response = await authApi.post("/register", employee); // Send request with all fields
+      const response = await authApi.post("/register", employee);
       alert("Employee registered successfully!");
       console.log(response.data);
     } catch (error) {
