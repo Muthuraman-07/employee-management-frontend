@@ -1,19 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { api } from "../../../service/api";
 import { useNavigate } from "react-router-dom";
-import {
-  Container,
-  Button,
-  TextField,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Box,
-  Typography,
-  Grid,
-} from "@mui/material"; // ✅ Material UI components
-import DeleteIcon from "@mui/icons-material/Delete"; // ✅ MUI Delete Icon
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap-icons/font/bootstrap-icons.css";
 import "./Shift.css";
 
 const Shift = () => {
@@ -35,7 +24,7 @@ const Shift = () => {
     try {
       await api.delete(`/delete-shift/${shiftId}`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("jwtToken")}`, // ✅ Ensure authorization
+          Authorization: `Bearer ${localStorage.getItem("jwtToken")}`, 
         },
       });
 
@@ -49,87 +38,50 @@ const Shift = () => {
   };
 
   return (
-    <Container
-      maxWidth="md"
-      sx={{
-        py: 4,
-        background: "linear-gradient(135deg, #1e3a8a, #3b82f6)",
-        borderRadius: 3,
-        color: "white",
-        boxShadow: 3,
-        textAlign: "center",
-      }}
-    >
+    <div className="container mt-5">
       {/* Title */}
-      <Typography variant="h4" fontWeight="bold" mb={4}>
-        Shift Management
-      </Typography>
+      <h2 className="text-center text-primary fw-bold mb-4">Shift Management</h2>
 
       {/* Shift Navigation Buttons */}
-      <Grid container spacing={2} justifyContent="center">
-        <Grid item>
-          <Button variant="contained" sx={{ background: "#1e40af", color: "white" }} onClick={() => navigate("/createShift")}>
-            Create Shift
-          </Button>
-        </Grid>
-        <Grid item>
-          <Button variant="contained" sx={{ background: "#2563eb", color: "white" }} onClick={() => navigate("/allocatedShift")}>
-            Allocated Shift
-          </Button>
-        </Grid>
-        <Grid item>
-          <Button variant="contained" sx={{ background: "#60a5fa", color: "white" }} onClick={() => navigate("/getAllShift")}>
-            Available Shift
-          </Button>
-        </Grid>
-        <Grid item>
-          <Button variant="contained" sx={{ background: "#93c5fd", color: "black" }} onClick={() => navigate("/updateShift")}>
-            Shift Changes
-          </Button>
-        </Grid>
-        <Grid item>
-          <Button variant="contained" sx={{ background: "#bfdbfe", color: "black" }} onClick={() => navigate("/shiftSwapRequests")}>
-            Shift Swap Requests
-          </Button>
-        </Grid>
-        <Grid item>
-          <Button
-            variant="contained"
-            sx={{ backgroundColor: "red", color: "white", fontWeight: "bold", boxShadow: 3 }}
-            startIcon={<DeleteIcon />}
-            onClick={handleDeletePopup}
-          >
-            Delete Shift
-          </Button>
-        </Grid>
-      </Grid>
+      <div className="d-flex flex-wrap justify-content-center gap-3 mb-4">
+        <button className="btn btn-primary" onClick={() => navigate("/createShift")}>Create Shift</button>
+        <button className="btn btn-primary" onClick={() => navigate("/allocatedShift")}>Allocated Shift</button>
+        <button className="btn btn-primary" onClick={() => navigate("/getAllShift")}>Available Shift</button>
+        <button className="btn btn-primary" onClick={() => navigate("/updateShift")}>Shift Changes</button>
+        <button className="btn btn-primary" onClick={() => navigate("/shiftSwapRequests")}>Shift Swap Requests</button>
+        <button className="btn btn-warning fw-bold" onClick={() => navigate("/shiftSwap")}>Shift Swap</button>
+        <button className="btn btn-danger fw-bold" onClick={handleDeletePopup}>
+          <i className="bi bi-trash-fill"></i> Delete Shift
+        </button>
+      </div>
 
-      {/* ✅ Fancy Delete Shift Modal */}
-      <Dialog open={showDeletePopup} onClose={() => setShowDeletePopup(false)}>
-        <DialogTitle sx={{ backgroundColor: "red", color: "white", fontWeight: "bold" }}>
-          Confirm Shift Deletion
-        </DialogTitle>
-        <DialogContent>
-          <TextField
-            label="Shift ID"
-            type="number"
-            fullWidth
-            variant="outlined"
-            value={shiftId}
-            sx={{ mt: 2 }}
-            onChange={(e) => setShiftId(e.target.value)}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setShowDeletePopup(false)} variant="outlined" color="secondary">
-            Cancel
-          </Button>
-          <Button onClick={confirmDeleteShift} sx={{ backgroundColor: "red", color: "white" }} variant="contained">
-            Delete Shift
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Container>
+      {/* Delete Shift Modal */}
+      {showDeletePopup && (
+        <div className="modal d-block" tabIndex="-1">
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header bg-danger text-white">
+                <h5 className="modal-title">Confirm Shift Deletion</h5>
+                <button type="button" className="btn-close" onClick={() => setShowDeletePopup(false)}></button>
+              </div>
+              <div className="modal-body">
+                <input
+                  type="number"
+                  className="form-control"
+                  placeholder="Enter Shift ID"
+                  value={shiftId}
+                  onChange={(e) => setShiftId(e.target.value)}
+                />
+              </div>
+              <div className="modal-footer">
+                <button className="btn btn-secondary" onClick={() => setShowDeletePopup(false)}>Cancel</button>
+                <button className="btn btn-danger" onClick={confirmDeleteShift}>Delete Shift</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 

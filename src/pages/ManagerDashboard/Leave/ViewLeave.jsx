@@ -45,7 +45,7 @@ const ViewLeave = () => {
 
       try {
         console.log(`Fetching leave records for employee ID: ${employeeId}`);
-        const response = await api.get(`/leave/all-leaves-history/${employeeId}`);
+        const response = await api.get(`/leave/all-leave-employee/${employeeId}`);
         setLeaveRecords(response.data);
       } catch (error) {
         console.error("Error fetching leave records:", error);

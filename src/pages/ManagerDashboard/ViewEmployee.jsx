@@ -1,15 +1,44 @@
 import React, { useState, useEffect } from "react";
-import { api } from "../../service/api"; // Using API instance
+import { api } from "../../service/api"; // API instance
 import "./ViewEmployee.css"; // Import CSS
 
 const ViewEmployee = () => {
   const [employees, setEmployees] = useState([]);
+  const [employeeId, setEmployeeId] = useState(null);
   const [error, setError] = useState("");
+
+  const username = localStorage.getItem("username"); // ✅ Get username from local storage
+
+  useEffect(() => {
+    const fetchEmployeeId = async () => {
+      try {
+        const response = await api.get(`employee/employee-username/${username}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("jwtToken")}`, // ✅ Include JWT Token
+          },
+        });
+
+        setEmployeeId(response.data.employeeId); // ✅ Extract Employee ID
+      } catch (err) {
+        console.error("Error fetching employee ID:", err);
+        setError("Failed to retrieve employee ID.");
+      }
+    };
+
+    if (username) {
+      fetchEmployeeId();
+    }
+  }, [username]);
 
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
-        const response = await api.get("employee/get/all-employee-records"); // API call to fetch all employees
+        const response = await api.get(`employee/get/all-employee-records/${employeeId}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("jwtToken")}`, // ✅ Include JWT Token
+          },
+        });
+
         setEmployees(response.data);
       } catch (err) {
         console.error("Error fetching employee details:", err);
@@ -17,8 +46,10 @@ const ViewEmployee = () => {
       }
     };
 
-    fetchEmployees();
-  }, []);
+    if (employeeId) {
+      fetchEmployees();
+    }
+  }, [employeeId]);
 
   return (
     <div className="employees-container">

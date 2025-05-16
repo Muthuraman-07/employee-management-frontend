@@ -10,12 +10,44 @@ const ShiftSwapRequests = () => {
   const [shiftRequests, setShiftRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [employeeId, setEmployeeId] = useState(null); // ✅ Extracted Manager ID
 
+  const username = localStorage.getItem("username"); // ✅ Get username from local storage
+
+  // ✅ Step 1: Fetch Employee ID using Username
+  useEffect(() => {
+    const fetchEmployeeId = async () => {
+      try {
+        const response = await api.get(`employee/employee-username/${username}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("jwtToken")}`, // ✅ Include JWT Token
+          },
+        });
+
+        setEmployeeId(response.data.employeeId); // ✅ Extracted Manager ID
+      } catch (err) {
+        console.error("Error fetching employee ID:", err);
+        setError("Failed to retrieve employee ID.");
+      }
+    };
+
+    if (username) {
+      fetchEmployeeId();
+    }
+  }, [username]);
+
+  // ✅ Step 2: Fetch Shift Requests Using Employee ID (Manager ID)
   useEffect(() => {
     const fetchShiftRequests = async () => {
       try {
         console.log("Fetching pending shift swap requests...");
-        const response = await api.get("/shifts/request-status", { params: { status: "PENDING" } });
+        const response = await api.get(`shifts/request-status/${employeeId}`, {
+          params: { status: "PENDING" },
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("jwtToken")}`, // ✅ Include JWT Token
+          },
+        });
+
         console.log("API Response:", response.data); // ✅ Debugging Response
         setShiftRequests(response.data);
       } catch (error) {
@@ -26,8 +58,10 @@ const ShiftSwapRequests = () => {
       }
     };
 
-    fetchShiftRequests();
-  }, []);
+    if (employeeId) {
+      fetchShiftRequests();
+    }
+  }, [employeeId]);
 
   const handleAction = async (requestId, approved, employeeId) => {
     try {
