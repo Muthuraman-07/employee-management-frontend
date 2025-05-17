@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { api } from "../../../service/api";
 import { useNavigate } from "react-router-dom";
-// import "./Shift.css";
 
 const Shift = () => {
   const [allocatedShifts, setAllocatedShifts] = useState([]);
@@ -12,20 +11,22 @@ const Shift = () => {
   useEffect(() => {
     const fetchShiftData = async () => {
       try {
+        // ✅ Ensure employee ID exists before making API calls
         if (!employeeId) {
-          console.error("No employee ID found.");
+          console.error("Error: No employee ID found in local storage.");
           return;
         }
 
+        // ✅ Fetch allocated shifts for the logged-in employee
         const response = await api.get(`/shift/allocated/${employeeId}`);
         setAllocatedShifts(response.data);
 
+        // ✅ Fetch available shifts from the backend
         const availableResponse = await api.get(`/shift/available`);
         setAvailableShifts(availableResponse.data);
 
-
       } catch (error) {
-        console.error("Error fetching shift data:", error);
+        console.error("❌ Error fetching shift data:", error.response?.data || error.message);
       }
     };
 
@@ -37,12 +38,15 @@ const Shift = () => {
       <h2>Shift Management</h2>
       
       <div className="shift-links">
-        {/* <button onClick={() => navigate("/createShift")} className="btn btn-warning fw-bold">Create Shift</button> */}
-        <button onClick={() => navigate("/allocatedShift")} className="btn btn-warning fw-bold">Allocated Shift</button>
-        <button onClick={() => navigate("/getAllShift")} className="btn btn-warning fw-bold">Available Shift</button>
-        <button onClick={() => navigate("/shiftSwap")} className="btn btn-warning fw-bold">Shift Swap</button>
+        {/* Button to navigate to allocated shifts */}
+        <button onClick={() => navigate("/allocatedShift")}>Allocated Shift</button>
+        
+        {/* Button to navigate to available shifts */}
+        <button onClick={() => navigate("/getAllShift")}>Available Shift</button>
+        
+        {/* Button to navigate to shift swap page */}
+        <button onClick={() => navigate("/shiftSwap")}>Shift Swap</button>
       </div>
-
     </div>
   );
 };

@@ -2,30 +2,34 @@ import React, { useEffect, useState } from "react";
 import "./EmployeeDashboard.css";
 import { api } from "../../service/api";
 import { useNavigate } from "react-router-dom";
-
-// ✅ Import Toastify for notifications
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const EmployeeDashboard = () => {
+  // State to store employee details
   const [data, setData] = useState({});
-  const username = localStorage.getItem("username"); // Fetch username from local storage
+  
+  // Retrieve username from local storage
+  const username = localStorage.getItem("username");
   const navigate = useNavigate();
 
+  // Fetch employee data from API when the component mounts
   useEffect(() => {
     const fetchEmployeeData = async () => {
       try {
-        const response = await api.get(`/employee/employee-username/${username}`); // Fetch employee details
+        const response = await api.get(`/employee/employee-username/${username}`);
         setData(response.data);
       } catch (error) {
-        console.error("Error fetching employee data:", error);
+        console.error("Error fetching employee data:", error.response?.data || error.message);
       }
     };
 
-    fetchEmployeeData();
+    if (username) {
+      fetchEmployeeData();
+    }
   }, [username]);
 
-  // ✅ Show shift swap notification on login
+  // Display shift swap notification if there is an update
   useEffect(() => {
     const swapStatus = localStorage.getItem(`shiftSwap_${data.employeeId}`);
 
@@ -35,12 +39,12 @@ const EmployeeDashboard = () => {
         autoClose: 3000,
       });
 
-      // ✅ Clear notification after showing once
+      // Remove notification after displaying once
       localStorage.removeItem(`shiftSwap_${data.employeeId}`);
     }
   }, [data]);
 
-  // ✅ Show leave approval/rejection notification on login
+  // Display leave approval or rejection notification if available
   useEffect(() => {
     const leaveStatus = localStorage.getItem(`leaveRequest_${data.employeeId}`);
 
@@ -50,12 +54,12 @@ const EmployeeDashboard = () => {
         autoClose: 3000,
       });
 
-      // ✅ Remove notification after displaying
+      // Remove notification after displaying once
       localStorage.removeItem(`leaveRequest_${data.employeeId}`);
     }
   }, [data]);
 
-  // 🔹 Prevent Back Navigation
+  // Prevent back navigation after login
   useEffect(() => {
     window.history.pushState(null, "", window.location.href);
 
@@ -72,16 +76,17 @@ const EmployeeDashboard = () => {
     };
   }, []);
 
+  // Logout function to clear session data and redirect to login page
   const handleLogout = () => {
     localStorage.removeItem("username");
-    localStorage.removeItem("jwtToken"); // Remove token if stored
+    localStorage.removeItem("jwtToken");
     console.log("Logged out");
-    navigate("/"); // Redirect to login page
+    navigate("/");
   };
 
   return (
     <div className="dashboard">
-      {/* ✅ Toast Notifications */}
+      {/* Toast Notifications */}
       <ToastContainer position="top-right" autoClose={3000} />
 
       {/* Sidebar Navigation */}
@@ -105,49 +110,37 @@ const EmployeeDashboard = () => {
         </ul>
       </div>
 
-      {/* Main Content */}
+      {/* Main Content Area */}
       <div className="main-content">
         <h2>Welcome to Your Employee Dashboard</h2>
         <div className="content">
           <img src="/emp1.gif" alt="Employee Workspace" />
           <p>
-            This dashboard gives employees access to key details regarding attendance, leave requests, shifts,
-            and assigned projects. Stay connected, track progress, and manage your work-life balance efficiently.
+            This dashboard provides access to key details regarding attendance, leave requests, shifts, 
+            and assigned projects. Track progress and manage your work-life balance efficiently.
           </p>
 
-          <h3>Work & Responsibilities</h3>
+          <h3>Work and Responsibilities</h3>
           <ul>
-            <li>
-              <strong>Profile Management:</strong> Keep your details up to date.
-            </li>
-            <li>
-              <strong>Attendance Tracking:</strong> Monitor your work hours.
-            </li>
-            <li>
-              <strong>Leave Requests:</strong> Apply and check leave status.
-            </li>
-            <li>
-              <strong>Shift Information:</strong> View and manage your assigned shifts.
-            </li>
-            <li>
-              <strong>Project Assignments:</strong> Stay updated on tasks.
-            </li>
-            <li>
-              <strong>Performance Metrics:</strong> Receive feedback and track growth.
-            </li>
+            <li><strong>Profile Management:</strong> Update your details.</li>
+            <li><strong>Attendance Tracking:</strong> Monitor your work hours.</li>
+            <li><strong>Leave Requests:</strong> Apply and check leave status.</li>
+            <li><strong>Shift Information:</strong> View and manage assigned shifts.</li>
+            <li><strong>Project Assignments:</strong> Stay updated on tasks.</li>
+            <li><strong>Performance Metrics:</strong> Receive feedback and track progress.</li>
           </ul>
 
           <h3>Company Announcements</h3>
           <p>
-            Stay informed about upcoming company events, training sessions, and important updates regarding
-            workplace policies and growth initiatives.
+            Stay informed about upcoming company events, training sessions, 
+            and important workplace updates.
           </p>
 
-          <h3>Employee Growth & Learning</h3>
+          <h3>Employee Growth and Learning</h3>
           <ul>
             <li>Access <strong>career development programs</strong> to enhance skills.</li>
-            <li>Engage in <strong>mentorship & training</strong> sessions.</li>
-            <li>Participate in <strong>team-building activities</strong> for collaboration.</li>
+            <li>Participate in <strong>mentorship and training</strong> sessions.</li>
+            <li>Engage in <strong>team-building activities</strong> for collaboration.</li>
           </ul>
         </div>
       </div>

@@ -6,15 +6,24 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import "./Shift.css";
 
 const Shift = () => {
+  // State to control delete shift popup visibility
   const [showDeletePopup, setShowDeletePopup] = useState(false);
+  
+  // State to store shift ID for deletion
   const [shiftId, setShiftId] = useState("");
+
+  // Initialize navigation for redirection
   const navigate = useNavigate();
+
+  // Retrieve employee ID from local storage
   const employeeId = localStorage.getItem("employeeId");
 
+  // Function to show the delete shift popup
   const handleDeletePopup = () => {
     setShowDeletePopup(true);
   };
 
+  // Function to confirm shift deletion
   const confirmDeleteShift = async () => {
     if (!shiftId || isNaN(shiftId)) {
       alert("Please enter a valid Shift ID.");
@@ -28,7 +37,7 @@ const Shift = () => {
         },
       });
 
-      alert(`Shift ID ${shiftId} has been deleted successfully!`);
+      alert(`Shift ID ${shiftId} has been deleted successfully.`);
       console.log(`Shift ${shiftId} deleted.`);
       setShowDeletePopup(false);
     } catch (error) {
@@ -65,6 +74,7 @@ const Shift = () => {
                 <button type="button" className="btn-close" onClick={() => setShowDeletePopup(false)}></button>
               </div>
               <div className="modal-body">
+                {/* Input field for shift ID */}
                 <input
                   type="number"
                   className="form-control"

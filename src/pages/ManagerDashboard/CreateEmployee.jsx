@@ -192,7 +192,7 @@ const RegisterEmployee = () => {
           <div className="col-md-6 mb-3">
   <label className="form-label">Joined Date</label>
   <div className="input-group">
-    <span className="input-group-text"><i className="bi bi-calendar"></i></span> {/* ✅ Bootstrap Calendar Icon */}
+    <span className="input-group-text"><i className="bi bi-calendar" ></i></span> {/* ✅ Bootstrap Calendar Icon */}
     <DatePicker
       selected={employee.joinedDate}
       onChange={(date) => setEmployee({ ...employee, joinedDate: date })}
@@ -206,13 +206,14 @@ const RegisterEmployee = () => {
 
           </div>
           <div className="col-md-6 mb-3">
-  <label className="form-label">Role</label>
-  <select className="form-select" name="role" onChange={handleChange} required>
-    <option value="" disabled selected>Select Role</option> 
-    <option value="ROLE_EMPLOYEE">Employee</option>
-    <option value="ROLE_MANAGER">Manager</option>
-  </select>
-</div>
+           <label className="form-label">Role</label>
+           <select className="form-select" name="role" defaultValue="" onChange={handleChange} required>
+  <option value="" disabled>-- Select Role --</option>
+  <option value="ROLE_EMPLOYEE">Employee</option>
+  <option value="ROLE_MANAGER">Manager</option>
+</select>
+
+            </div>
         </div>
         <button type="submit" className="btn btn-success w-100 mt-3">Register Employee</button>
       </form>

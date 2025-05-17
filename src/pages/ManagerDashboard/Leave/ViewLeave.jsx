@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from "react";
-import { api } from "../../../service/api"; // Adjust path as needed
-import "bootstrap/dist/css/bootstrap.min.css"; // Ensure Bootstrap is included
+import { api } from "../../../service/api"; 
+import "bootstrap/dist/css/bootstrap.min.css"; 
 
 const ViewLeave = () => {
+  // State variables to manage employee ID and leave records
   const [employeeId, setEmployeeId] = useState(null);
   const [leaveRecords, setLeaveRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const username = localStorage.getItem("username"); // Fetch username from localStorage
+  // Retrieve username from localStorage
+  const username = localStorage.getItem("username");
 
+  // Fetch employee ID based on username
   useEffect(() => {
     const fetchEmployeeId = async () => {
       try {
@@ -20,18 +23,14 @@ const ViewLeave = () => {
           return;
         }
 
-        console.log("Fetching employee ID...");
         const response = await api.get(`employee/employee-username/${username}`);
-
         if (response.data && response.data.employeeId) {
-          console.log("Received Employee ID:", response.data.employeeId);
           setEmployeeId(response.data.employeeId);
         } else {
-          console.error("Employee ID not found for the username.");
           setError("Employee ID not found.");
         }
       } catch (error) {
-        console.error("Error fetching employee details:", error);
+        console.error("Error fetching employee details:", error.response?.data || error.message);
         setError("Error fetching employee details.");
       }
     };
@@ -39,16 +38,16 @@ const ViewLeave = () => {
     fetchEmployeeId();
   }, [username]);
 
+  // Fetch leave records once employee ID is retrieved
   useEffect(() => {
     const fetchLeaveRecords = async () => {
       if (!employeeId) return;
 
       try {
-        console.log(`Fetching leave records for employee ID: ${employeeId}`);
         const response = await api.get(`/leave/all-leave-employee/${employeeId}`);
         setLeaveRecords(response.data);
       } catch (error) {
-        console.error("Error fetching leave records:", error);
+        console.error("Error fetching leave records:", error.response?.data || error.message);
         setError("Error fetching leave records.");
       } finally {
         setLoading(false);
@@ -58,12 +57,15 @@ const ViewLeave = () => {
     fetchLeaveRecords();
   }, [employeeId]);
 
+  // Display loading message while fetching data
   if (loading) return <p className="text-center text-primary">Loading leave records...</p>;
+
+  // Display error message if an issue occurs
   if (error) return <p className="text-center text-danger">{error}</p>;
 
-  // ✅ Extract only date from LocalDateTime
+  // Function to extract date from timestamp
   const extractDate = (timestamp) => {
-    return timestamp ? new Date(timestamp).toISOString().split("T")[0] : "Pending"; // Extracts YYYY-MM-DD
+    return timestamp ? new Date(timestamp).toISOString().split("T")[0] : "Pending"; 
   };
 
   return (
@@ -72,6 +74,7 @@ const ViewLeave = () => {
         Leave Records for Employee ID - {employeeId || "Loading..."}
       </h2>
 
+      {/* Display message if no leave records are found */}
       {leaveRecords.length === 0 ? (
         <p className="text-center text-warning">No leave records found.</p>
       ) : (

@@ -1,21 +1,27 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Button } from "react-bootstrap"; // ✅ Added Bootstrap Modal for error handling
+import { Modal, Button } from "react-bootstrap";
 import DatePicker from "react-datepicker"; 
 import "react-datepicker/dist/react-datepicker.css"; 
 import { api } from "../../../service/api";
 import "bootstrap/dist/css/bootstrap.min.css"; 
 
 const Attendance = () => {
+  // State variables to manage attendance inputs
   const [entries, setEntries] = useState([]);
   const [date, setDate] = useState(null);
   const [clockInTime, setCheckIn] = useState("");
   const [clockOutTime, setCheckOut] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [employeeId, setEmployeeId] = useState(null);
-  const [errorMessage, setErrorMessage] = useState(""); // ✅ Error handling
-  const [showErrorPopup, setShowErrorPopup] = useState(false); // ✅ Error popup state
+
+  // State variables for error handling
+  const [errorMessage, setErrorMessage] = useState("");
+  const [showErrorPopup, setShowErrorPopup] = useState(false);
+
+  // Retrieve username from local storage
   const username = localStorage.getItem("username");
 
+  // Fetch employee ID based on username
   useEffect(() => {
     const fetchEmployeeId = async () => {
       try {
@@ -27,17 +33,19 @@ const Attendance = () => {
         const response = await api.get(`employee/employee-username/${username}`);
         setEmployeeId(response.data.employeeId);
       } catch (error) {
-        console.error("Error fetching employee details:", error);
+        console.error("Error fetching employee details:", error.response?.data || error.message);
       }
     };
 
     fetchEmployeeId();
   }, [username]);
 
+  // Function to restrict date selection to weekdays only
   const isWeekday = (date) => {
     return date.getDay() !== 0 && date.getDay() !== 6;
   };
 
+  // Function to show the attendance modal
   const handleMarkAttendance = () => {
     setDate(null);
     setCheckIn("");
@@ -45,9 +53,10 @@ const Attendance = () => {
     setShowModal(true);
   };
 
+  // Function to submit the attendance record
   const handleSingleEntrySubmit = async () => {
     if (!date || !employeeId) {
-      setErrorMessage("⚠ Error: Missing required fields.");
+      setErrorMessage("Error: Missing required fields.");
       setShowErrorPopup(true);
       return;
     }
@@ -65,14 +74,14 @@ const Attendance = () => {
       await api.post(`/attendance/attendanceRecords/${employeeId}`, newEntry); 
       setEntries([...entries, newEntry]);
       setShowModal(false);
-      alert("✅ Attendance recorded successfully!");
+      alert("Attendance recorded successfully!");
     } catch (error) {
-      console.error("❌ Error saving attendance:", error);
+      console.error("Error saving attendance:", error.response?.data || error.message);
 
       if (error.response && error.response.status === 400) {
-        setErrorMessage("⚠ Attendance already marked for this date!");
+        setErrorMessage("Attendance already marked for this date!");
       } else {
-        setErrorMessage("❌ Failed to record attendance. Please try again.");
+        setErrorMessage("Failed to record attendance. Please try again.");
       }
 
       setShowErrorPopup(true);
@@ -92,6 +101,7 @@ const Attendance = () => {
         </a>
       </div>
 
+      {/* Attendance Entry Modal */}
       {showModal && (
         <div className="modal fade show" style={{ display: "block", backgroundColor: "rgba(0,0,0,0.5)" }} tabIndex="-1">
           <div className="modal-dialog modal-dialog-centered">
@@ -115,11 +125,23 @@ const Attendance = () => {
                   </div>
                   <div className="mb-3">
                     <label className="form-label fw-semibold">Check-In Time:</label>
-                    <input type="time" className="form-control form-control-md" name="checkIn" value={clockInTime} onChange={(e) => setCheckIn(e.target.value)} />
+                    <input 
+                      type="time" 
+                      className="form-control form-control-md" 
+                      name="checkIn" 
+                      value={clockInTime} 
+                      onChange={(e) => setCheckIn(e.target.value)} 
+                    />
                   </div>
                   <div className="mb-3">
                     <label className="form-label fw-semibold">Check-Out Time:</label>
-                    <input type="time" className="form-control form-control-md" name="checkOut" value={clockOutTime} onChange={(e) => setCheckOut(e.target.value)} />
+                    <input 
+                      type="time" 
+                      className="form-control form-control-md" 
+                      name="checkOut" 
+                      value={clockOutTime} 
+                      onChange={(e) => setCheckOut(e.target.value)} 
+                    />
                   </div>
                 </form>
               </div>
@@ -132,7 +154,7 @@ const Attendance = () => {
         </div>
       )}
 
-      {/* ✅ Error Modal Popup */}
+      {/* Error Modal Popup */}
       <Modal show={showErrorPopup} onHide={() => setShowErrorPopup(false)} centered>
         <Modal.Header closeButton>
           <Modal.Title>Error</Modal.Title>

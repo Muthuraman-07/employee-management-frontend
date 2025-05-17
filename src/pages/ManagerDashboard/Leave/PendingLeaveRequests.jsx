@@ -1,18 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { api } from "../../../service/api";
 import "bootstrap/dist/css/bootstrap.min.css"; 
-
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const PendingLeaveRequests = () => {
+  // State variables to store leave requests and employee details
   const [leaveRequests, setLeaveRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [employeeId, setEmployeeId] = useState(null); 
 
+  // Fetch username from localStorage
   const username = localStorage.getItem("username"); 
 
+  // Fetch employee ID based on username
   useEffect(() => {
     const fetchEmployeeId = async () => {
       try {
@@ -24,7 +26,7 @@ const PendingLeaveRequests = () => {
 
         setEmployeeId(response.data.employeeId);
       } catch (err) {
-        console.error("Error fetching employee ID:", err);
+        console.error("Error fetching employee ID:", err.response?.data || err.message);
         setError("Failed to retrieve employee ID.");
       }
     };
@@ -34,6 +36,7 @@ const PendingLeaveRequests = () => {
     }
   }, [username]);
 
+  // Fetch pending leave requests once employee ID is retrieved
   useEffect(() => {
     const fetchLeaveRequests = async () => {
       try {
@@ -45,7 +48,7 @@ const PendingLeaveRequests = () => {
 
         setLeaveRequests(response.data);
       } catch (error) {
-        console.error("Error fetching leave requests:", error);
+        console.error("Error fetching leave requests:", error.response?.data || error.message);
         setError("Failed to fetch leave requests.");
       } finally {
         setLoading(false);
@@ -57,8 +60,8 @@ const PendingLeaveRequests = () => {
     }
   }, [employeeId]);
 
+  // Notify employee when logging in about leave request status
   useEffect(() => {
-    // ✅ Notify employee when logging in
     const savedStatus = localStorage.getItem(`leaveRequest_${employeeId}`);
     if (savedStatus) {
       toast.info(`Your leave request has been ${savedStatus.toLowerCase()}!`, {
@@ -66,11 +69,11 @@ const PendingLeaveRequests = () => {
         autoClose: 3000,
       });
 
-      // ✅ Remove notification after displaying
       localStorage.removeItem(`leaveRequest_${employeeId}`);
     }
   }, [employeeId]);
 
+  // Handle approval or rejection of leave requests
   const handleAction = async (leaveId, status, employeeId) => {
     try {
       await api.patch(`leave/approve-leaveRequest/${leaveId}/${status}`, null, {
@@ -79,7 +82,6 @@ const PendingLeaveRequests = () => {
         },
       });
 
-      // ✅ Save status for employee notification
       localStorage.setItem(`leaveRequest_${employeeId}`, status === "APPROVED" ? "APPROVED" : "REJECTED");
 
       toast.success(`Leave request ${status.toLowerCase()}!`, {
@@ -94,12 +96,15 @@ const PendingLeaveRequests = () => {
       );
 
     } catch (error) {
-      console.error("Error updating leave request:", error);
+      console.error("Error updating leave request:", error.response?.data || error.message);
       setError("Failed to update leave request.");
     }
   };
 
+  // Display loading message while fetching data
   if (loading) return <p className="text-center text-primary">Loading pending leave requests...</p>;
+
+  // Display error message if an issue occurs
   if (error) return <p className="text-center text-danger">{error}</p>;
 
   return (

@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { api } from "../../../service/api";
-import "bootstrap/dist/css/bootstrap.min.css"; // Ensure Bootstrap is included
+import "bootstrap/dist/css/bootstrap.min.css";
 
 const ShiftSwap = () => {
   const [employeeId, setEmployeeId] = useState(null);
   const [shiftId, setShiftId] = useState("");
   const [message, setMessage] = useState("");
-  const username = localStorage.getItem("username"); // Fetch username from localStorage
+  const username = localStorage.getItem("username");
 
   useEffect(() => {
     const fetchEmployeeId = async () => {
       try {
         if (!username) {
-          console.error("No username found.");
-          setMessage("Username not found.");
+          console.error("Error: No username found in local storage.");
+          setMessage("Error: Username not found.");
           return;
         }
 
@@ -23,11 +23,11 @@ const ShiftSwap = () => {
         if (response.data && response.data.employeeId) {
           setEmployeeId(response.data.employeeId);
         } else {
-          setMessage("Employee ID not found.");
+          setMessage("Error: Employee ID not found.");
         }
       } catch (error) {
-        console.error("Error fetching employee details:", error);
-        setMessage("Error fetching employee details.");
+        console.error("Error fetching employee details:", error.response?.data || error.message);
+        setMessage("Failed to retrieve employee details. Please try again.");
       }
     };
 
@@ -42,20 +42,20 @@ const ShiftSwap = () => {
     e.preventDefault();
 
     if (!employeeId || !shiftId) {
-      setMessage("Both Employee ID and Shift ID are required.");
+      setMessage("Error: Both Employee ID and Shift ID are required.");
       return;
     }
 
     try {
       console.log(`Sending swap request for Employee ID: ${employeeId}, Shift ID: ${shiftId}`);
       await api.post("/shifts/request-swap", null, {
-        params: { employeeId, shiftId }, // ✅ Pass parameters correctly
+        params: { employeeId, shiftId },
       });
 
-      setMessage("Shift swap request submitted successfully!");
+      setMessage("Shift swap request submitted successfully");
     } catch (error) {
-      console.error("Error requesting shift swap:", error);
-      setMessage("Failed to submit swap request. Please try again.");
+      console.error("Error requesting shift swap:", error.response?.data || error.message);
+      setMessage("Failed to submit swap request. Please try again later.");
     }
   };
 
@@ -68,8 +68,15 @@ const ShiftSwap = () => {
         <div className="card-body">
           <form onSubmit={handleSubmit} className="d-flex flex-column align-items-center">
             <div className="mb-3 w-50">
-              <label className="form-label fw-bold">Shift ID:</label>
-              <input type="number" name="shiftId" value={shiftId} onChange={handleChange} required className="form-control"/>
+              <label className="form-label fw-bold">Shift ID</label>
+              <input 
+                type="number" 
+                name="shiftId" 
+                value={shiftId} 
+                onChange={handleChange} 
+                required 
+                className="form-control"
+              />
             </div>
 
             <button type="submit" className="btn btn-warning fw-bold mt-3">Submit Swap Request</button>
