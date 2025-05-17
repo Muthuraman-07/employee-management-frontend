@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { api } from "../../../service/api";
-import "bootstrap/dist/css/bootstrap.min.css"; // ✅ Ensure Bootstrap is included
+import "bootstrap/dist/css/bootstrap.min.css"; 
 
-// ✅ Import Toastify for notifications
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -10,21 +9,20 @@ const PendingLeaveRequests = () => {
   const [leaveRequests, setLeaveRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [employeeId, setEmployeeId] = useState(null); // ✅ Extracted Manager ID
+  const [employeeId, setEmployeeId] = useState(null); 
 
-  const username = localStorage.getItem("username"); // ✅ Get username from local storage
+  const username = localStorage.getItem("username"); 
 
-  // ✅ Step 1: Fetch Employee ID using Username
   useEffect(() => {
     const fetchEmployeeId = async () => {
       try {
         const response = await api.get(`employee/employee-username/${username}`, {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("jwtToken")}`, // ✅ Include JWT Token
+            Authorization: `Bearer ${localStorage.getItem("jwtToken")}`,
           },
         });
 
-        setEmployeeId(response.data.employeeId); // ✅ Extracted Manager ID
+        setEmployeeId(response.data.employeeId);
       } catch (err) {
         console.error("Error fetching employee ID:", err);
         setError("Failed to retrieve employee ID.");
@@ -36,18 +34,15 @@ const PendingLeaveRequests = () => {
     }
   }, [username]);
 
-  // ✅ Step 2: Fetch Leave Requests Using Manager ID
   useEffect(() => {
     const fetchLeaveRequests = async () => {
       try {
-        console.log("Fetching pending leave requests...");
         const response = await api.get(`leave/leave-history-by-status/PENDING/${employeeId}`, {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("jwtToken")}`, 
+            Authorization: `Bearer ${localStorage.getItem("jwtToken")}`,
           },
         });
 
-        console.log("API Response:", response.data);
         setLeaveRequests(response.data);
       } catch (error) {
         console.error("Error fetching leave requests:", error);
@@ -62,26 +57,36 @@ const PendingLeaveRequests = () => {
     }
   }, [employeeId]);
 
+  useEffect(() => {
+    // ✅ Notify employee when logging in
+    const savedStatus = localStorage.getItem(`leaveRequest_${employeeId}`);
+    if (savedStatus) {
+      toast.info(`Your leave request has been ${savedStatus.toLowerCase()}!`, {
+        position: "top-right",
+        autoClose: 3000,
+      });
+
+      // ✅ Remove notification after displaying
+      localStorage.removeItem(`leaveRequest_${employeeId}`);
+    }
+  }, [employeeId]);
+
   const handleAction = async (leaveId, status, employeeId) => {
     try {
-      console.log(`Updating leave request ID: ${leaveId}, Status: ${status}`);
-
       await api.patch(`leave/approve-leaveRequest/${leaveId}/${status}`, null, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("jwtToken")}`,
         },
       });
 
-      // ✅ Save approval/rejection in local storage for employee notification
+      // ✅ Save status for employee notification
       localStorage.setItem(`leaveRequest_${employeeId}`, status === "APPROVED" ? "APPROVED" : "REJECTED");
 
-      // ✅ Show success notification for the manager
-      toast.success(`Leave request ${status === "APPROVED" ? "approved" : "rejected"}! ✅`, {
+      toast.success(`Leave request ${status.toLowerCase()}!`, {
         position: "top-right",
         autoClose: 3000,
       });
 
-      // ✅ Update UI after approval/rejection
       setLeaveRequests((prevRequests) =>
         prevRequests.map((request) =>
           request.leaveId === leaveId ? { ...request, status } : request
@@ -99,7 +104,6 @@ const PendingLeaveRequests = () => {
 
   return (
     <div className="container mt-5">
-      {/* ✅ Toast Notifications */}
       <ToastContainer position="top-right" autoClose={3000} />
 
       <div className="card shadow-lg">

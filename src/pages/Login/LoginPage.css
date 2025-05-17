@@ -122,3 +122,16 @@ label,h2{
   right: 10px;
   cursor: pointer;
 }
+
+.eye-button {
+  border: none;
+  background: transparent;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+}
+
+.eye-button:hover {
+  transform: scale(1.2);
+  color: #007bff;
+}

@@ -30,6 +30,7 @@ import EmployeeReports from './pages/Reports/EmployeeReport.jsx';
 import EditProfile from './pages/EmployeeDashboard/EditProfile.jsx';
 import EmpLeave from './pages/EmployeeDashboard/EmpLeave/EmpLeave.jsx';
 import PendingLeaveRequests from './pages/ManagerDashboard/Leave/PendingLeaveRequests.jsx';
+import "bootstrap/dist/css/bootstrap.min.css";
 function App() {
   // const token = localStorage.getItem('token');
   // const role = localStorage.getItem('role');

@@ -39,11 +39,13 @@ const Profile = () => {
             <div className="detail"><strong>Username:</strong> {employee.username}</div>
             <div className="detail"><strong>First Name:</strong> {employee.firstName}</div>
             <div className="detail"><strong>Last Name:</strong> {employee.lastName}</div>
+            <div className="detail"> <strong>Role:</strong> {employee.role ? employee.role.substring(5) : ""}</div>
             <div className="detail"><strong>Email:</strong> {employee.email}</div>
             <div className="detail"><strong>Phone Number:</strong> {employee.phoneNumber}</div>
             <div className="detail"><strong>Department:</strong> {employee.department}</div>
             <div className="detail"><strong>Shift ID:</strong> {employee.shiftId}</div>
             <div className="detail"><strong>Joined Date:</strong> {employee.joinedDate}</div>
+            
           </div>
 
           {/* ✅ Edit Profile Button */}

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
+import DatePicker from "react-datepicker"; // ✅ Import DatePicker
+import "react-datepicker/dist/react-datepicker.css"; // ✅ Import styles
 import { api } from "../../../service/api";
-// import "./ApplyLeave.css";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 const ApplyLeave = () => {
-  const [leave, setLeave] = useState({ startDate: "", endDate: "", leaveType: "Vacation" }); // Default selection
+  const [leave, setLeave] = useState({ startDate: null, endDate: null, leaveType: "Vacation" });
   const [employeeId, setEmployeeId] = useState(null);
   const username = localStorage.getItem("username");
 
@@ -32,27 +34,25 @@ const ApplyLeave = () => {
     fetchEmployeeId();
   }, [username]);
 
-  const handleChange = (e) => {
-    setLeave({ ...leave, [e.target.name]: e.target.value });
+  // ✅ Disable Saturdays & Sundays in the calendar
+  const isWeekday = (date) => {
+    const day = date.getDay();
+    return day !== 0 && day !== 6; // ✅ Allow only weekdays
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validate that the start date is today or in the future
-    const today = new Date().toISOString().split("T")[0];
-    if (leave.startDate < today) {
-      alert("Start Date must be today or in the future.");
+    if (!leave.startDate || !leave.endDate) {
+      alert("Please select both start and end dates.");
       return;
     }
 
-    // Validate that the end date is in the future
     if (leave.endDate <= leave.startDate) {
       alert("End Date must be later than Start Date.");
       return;
     }
 
-    // Validate leaveType length (matching DTO constraints)
     if (leave.leaveType.length < 2 || leave.leaveType.length > 30) {
       alert("Leave Type must be between 2 and 30 characters.");
       return;
@@ -63,15 +63,13 @@ const ApplyLeave = () => {
       return;
     }
 
-    // Ensure time format is included when sending the request
-    const formattedStartDate = `${leave.startDate}T09:00:00`; // Default morning time
-    const formattedEndDate = `${leave.endDate}T18:00:00`; // Default evening time
+    const formattedStartDate = leave.startDate.toISOString().split("T")[0] + "T09:00:00";
+    const formattedEndDate = leave.endDate.toISOString().split("T")[0] + "T18:00:00";
 
     try {
       console.log({ ...leave, startDate: formattedStartDate, endDate: formattedEndDate });
 
       await api.post(`/leave/apply-leave/${employeeId}`, {
-
         startDate: formattedStartDate,
         endDate: formattedEndDate,
         leaveType: leave.leaveType,
@@ -84,24 +82,49 @@ const ApplyLeave = () => {
   };
 
   return (
-    <div className="apply-leave-container">
-      <h2>Apply for Leave</h2>
-      <form onSubmit={handleSubmit}>
-        <label>Start Date:</label>
-        <input type="date" name="startDate" onChange={handleChange} required />
+    <div className="container mt-5">
+      <h2 className="text-center mb-4">Apply for Leave</h2>
+      <div className="card p-4 shadow-lg">
+        <form onSubmit={handleSubmit}>
+          <div className="mb-3">
+            <label className="form-label">Start Date:</label>
+            <DatePicker
+              selected={leave.startDate}
+              onChange={(date) => setLeave({ ...leave, startDate: date })}
+              filterDate={isWeekday} // ✅ Disable weekends dynamically
+              dateFormat="yyyy-MM-dd"
+              className="form-control"
+              required
+            />
+          </div>
 
-        <label>End Date:</label>
-        <input type="date" name="endDate" onChange={handleChange} required />
+          <div className="mb-3">
+            <label className="form-label">End Date:</label>
+            <DatePicker
+              selected={leave.endDate}
+              onChange={(date) => setLeave({ ...leave, endDate: date })}
+              filterDate={isWeekday} // ✅ Disable weekends dynamically
+              dateFormat="yyyy-MM-dd"
+              className="form-control"
+              required
+            />
+          </div>
 
-        <label>Leave Type:</label>
-        <select name="leaveType" onChange={handleChange} value={leave.leaveType} required>
-          <option value="Vacation">Vacation</option>
-          <option value="Sick Leave">Sick Leave</option>
-          <option value="Casual Leave">Casual Leave</option>
-        </select>
+          <div className="mb-3">
+            <label className="form-label">Leave Type:</label>
+            <select className="form-select" name="leaveType" onChange={(e) => setLeave({ ...leave, leaveType: e.target.value })} value={leave.leaveType} required>
+              <option value="Vacation">Vacation</option>
+              <option value="Sick Leave">Sick Leave</option>
+              <option value="Casual Leave">Casual Leave</option>
+            </select>
+          </div>
 
-        <button type="submit">Submit Leave Request</button>
-      </form>
+          <div className="d-flex justify-content-center gap-3 mt-3">
+            <button type="submit" className="btn btn-success fw-bold">Submit Leave Request</button>
+            <button type="reset" className="btn btn-secondary fw-bold">Reset</button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };

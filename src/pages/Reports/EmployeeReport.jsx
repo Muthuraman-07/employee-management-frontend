@@ -6,8 +6,9 @@ const EmployeeReports = () => {
   const [employeeData, setEmployeeData] = useState([]);
   const [employeeId, setEmployeeId] = useState(null);
   const [error, setError] = useState("");
+  const [showHeaders, setShowHeaders] = useState(false); // ✅ Tracks header visibility
 
-  const username = localStorage.getItem("username"); // ✅ Retrieve username from local storage
+  const username = localStorage.getItem("username"); 
 
   useEffect(() => {
     const fetchEmployeeId = async () => {
@@ -15,12 +16,10 @@ const EmployeeReports = () => {
         if (!username) throw new Error("No username found in local storage.");
 
         const response = await api.get(`employee/employee-username/${username}`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("jwtToken")}`, // ✅ Include JWT Token
-          },
+          headers: { Authorization: `Bearer ${localStorage.getItem("jwtToken")}` },
         });
 
-        setEmployeeId(response.data.employeeId); // ✅ Extract Employee ID
+        setEmployeeId(response.data.employeeId);
       } catch (err) {
         console.error("Error fetching employee ID:", err);
         setError("Failed to retrieve employee ID.");
@@ -35,12 +34,11 @@ const EmployeeReports = () => {
       if (!employeeId) throw new Error("Employee ID not available yet.");
 
       const response = await api.get(`employee/get/all-employee-records/${employeeId}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("jwtToken")}`, // ✅ Include JWT Token
-        },
+        headers: { Authorization: `Bearer ${localStorage.getItem("jwtToken")}` },
       });
 
       setEmployeeData(response.data);
+      setShowHeaders(true); // ✅ Show table headers when data is loaded
     } catch (err) {
       console.error("Error fetching employee reports:", err);
       setError("Failed to load employee reports. Please try again.");
@@ -69,20 +67,22 @@ const EmployeeReports = () => {
 
       <div className="table-responsive">
         <table id="employeeReport" className="table table-bordered table-striped">
-          <thead className="table-dark">
-            <tr>
-              <th>Employee ID</th>
-              <th>First Name</th>
-              <th>Last Name</th>
-              <th>Department</th>
-              <th>Role</th>
-              <th>Email</th>
-              <th>Phone Number</th>
-              <th>Manager ID</th>
-              <th>Shift ID</th>
-              <th>Joined Date</th>
-            </tr>
-          </thead>
+          {showHeaders && ( // ✅ Show headers only after clicking "Generate Report"
+            <thead className="table-dark">
+              <tr>
+                <th>Employee ID</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Department</th>
+                <th>Role</th>
+                <th>Email</th>
+                <th>Phone Number</th>
+                <th>Manager ID</th>
+                <th>Shift ID</th>
+                <th>Joined Date</th>
+              </tr>
+            </thead>
+          )}
           <tbody>
             {employeeData.map((emp) => (
               <tr key={emp.employeeId}>

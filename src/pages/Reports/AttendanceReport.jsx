@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import { api } from "../../service/api";
 import { exportToPDF, exportToExcel } from "../../utils/exportUtils";
-import "bootstrap/dist/css/bootstrap.min.css"; // Ensure Bootstrap is included
+import "bootstrap/dist/css/bootstrap.min.css";
 
 const AttendanceReports = () => {
   const [reportType, setReportType] = useState("all");
   const [employee, setEmployee] = useState("");
   const [reportData, setReportData] = useState([]);
+  const [showHeaders, setShowHeaders] = useState(false); // ✅ Track header visibility
 
   const generateReport = async () => {
     try {
@@ -19,6 +20,7 @@ const AttendanceReports = () => {
       }
 
       setReportData(response.data);
+      setShowHeaders(true); // ✅ Show table headers only after clicking "Generate Report"
     } catch (error) {
       console.error("Error generating report:", error);
     }
@@ -69,16 +71,18 @@ const AttendanceReports = () => {
 
       <div className="table-responsive">
         <table id="attendanceReport" className="table table-bordered table-striped">
-          <thead className="table-dark">
-            <tr>
-              <th>Attendance ID</th>
-              <th>Employee ID</th>
-              <th>Is Present</th>
-              <th>Clock In</th>
-              <th>Clock Out</th>
-              <th>Work Hours</th>
-            </tr>
-          </thead>
+          {showHeaders && ( // ✅ Show headers **only** after clicking "Generate Report"
+            <thead className="table-dark">
+              <tr>
+                <th>Attendance ID</th>
+                <th>Employee ID</th>
+                <th>Is Present</th>
+                <th>Clock In</th>
+                <th>Clock Out</th>
+                <th>Work Hours</th>
+              </tr>
+            </thead>
+          )}
           <tbody>
             {reportData.map((item, index) => (
               <tr key={index}>

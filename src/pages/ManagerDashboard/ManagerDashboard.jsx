@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { api } from "../../service/api";
-import { Modal, Button, Form } from "react-bootstrap";
+import { Modal, Button, Form, Toast, ToastContainer } from "react-bootstrap"; 
 import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap-icons/font/bootstrap-icons.css"; // ✅ Bootstrap Icons Import
+import "bootstrap-icons/font/bootstrap-icons.css"; 
 import "./ManagerDashboard.css";
 import { useNavigate } from "react-router-dom";
  
@@ -11,7 +11,9 @@ const ManagerDashboard = () => {
   const [showDeletePopup, setShowDeletePopup] = useState(false);
   const [employeeId, setEmployeeId] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
- 
+  const [warningMessage, setWarningMessage] = useState(""); // ✅ State for warning message
+  const [showToast, setShowToast] = useState(false); 
+
   const handleLogout = () => {
     localStorage.removeItem("username");
     localStorage.removeItem("jwtToken");
@@ -19,47 +21,52 @@ const ManagerDashboard = () => {
     navigate("/");
   };
 
-   // 🔹 Prevent Back Navigation
-    useEffect(() => {
+  useEffect(() => {
+    window.history.pushState(null, "", window.location.href);
+   
+    const handleBackButton = (event) => {
+      event.preventDefault();
       window.history.pushState(null, "", window.location.href);
+    };
    
-      const handleBackButton = (event) => {
-        event.preventDefault();
-        window.history.pushState(null, "", window.location.href);
-        console.log("Back button disabled!");
-      };
-   
-      window.addEventListener("popstate", handleBackButton);
-   
-      return () => {
-        window.removeEventListener("popstate", handleBackButton);
-      };
-    }, []);
+    window.addEventListener("popstate", handleBackButton);
+    return () => window.removeEventListener("popstate", handleBackButton);
+  }, []);
  
   const handleDeletePopup = () => {
+    setWarningMessage(""); // ✅ Clear any previous warnings
     setShowDeletePopup(true);
   };
- 
+
   const confirmDelete = async () => {
     if (!employeeId || isNaN(employeeId)) {
-      alert("Please enter a valid Employee ID.");
+      setWarningMessage("⚠ Please enter a valid Employee ID."); // ✅ Show warning message
       return;
     }
- 
+  
     try {
       await api.delete(`/employee/delete/employee-record/${employeeId}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("jwtToken")}` },
       });
- 
-      alert(`Employee ID ${employeeId} has been deleted successfully!`);
-      console.log("Employee deleted.");
+  
       setShowDeletePopup(false);
+      setShowToast(true);
     } catch (error) {
       console.error("Error deleting employee:", error.response?.data || error.message);
-      alert("Failed to delete employee. Please try again.");
+      
+      if (error.response && error.response.status === 404) {
+        setWarningMessage("❌ Employee not found. Check the ID and try again.");
+      } 
+      else if (error.response && error.response.status === 500) {
+        setWarningMessage("❌ Something went wrong on our end. Please try again or reach out for assistance.");
+      } 
+      else {
+        setWarningMessage("❌ Failed to delete employee. Please try again.");
+      }
     }
   };
- 
+  
+
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
@@ -76,22 +83,28 @@ const ManagerDashboard = () => {
     };
  
     window.addEventListener("scroll", handleScroll);
-    handleScroll(); // Trigger on mount to check visibility
+    handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
  
   return (
-   
-   
     <div className="dashboard">
-      {/* ✅ Menu Icon to Open Sidebar */}
       {!isSidebarOpen && (
         <button className="menu-icon" onClick={toggleSidebar}>
           <i className="bi bi-list"></i>
         </button>
       )}
+
+      {/* ✅ Bootstrap Toast Notification */}
+      <ToastContainer position="top-end" className="p-3">
+        <Toast show={showToast} onClose={() => setShowToast(false)} delay={3000} autohide bg="success">
+          <Toast.Header>
+            <strong className="me-auto">Success</strong>
+          </Toast.Header>
+          <Toast.Body>✅ Employee deleted successfully!</Toast.Body>
+        </Toast>
+      </ToastContainer>
  
-      {/* ✅ Sidebar Navigation with Close Button */}
       {isSidebarOpen && (
         <div className="sidebar">
           <button className="close-icon" onClick={toggleSidebar}>
@@ -128,13 +141,14 @@ const ManagerDashboard = () => {
           </ul>
         </div>
       )}
- 
-      {/* ✅ Fancy Delete Employee Modal */}
+
+      {/* ✅ Delete Employee Modal */}
       <Modal show={showDeletePopup} onHide={() => setShowDeletePopup(false)} centered>
         <Modal.Header closeButton>
           <Modal.Title>Confirm Employee Deletion</Modal.Title>
         </Modal.Header>
         <Modal.Body>
+          {warningMessage && <p className="text-warning fw-bold">{warningMessage}</p>}
           <Form>
             <Form.Group>
               <Form.Label>Employee ID</Form.Label>
@@ -152,6 +166,9 @@ const ManagerDashboard = () => {
           <Button variant="danger" onClick={confirmDelete}>Delete Employee</Button>
         </Modal.Footer>
       </Modal>
+
+     
+
  
       {/* ✅ Main Content */}
       <div className="main-content">
@@ -182,13 +199,11 @@ const ManagerDashboard = () => {
             </div>
           </div>
         </div>
- 
-        {/* New Section: Company Vision */}
+
+        {/* ✅ New Section: Company Vision */}
         <div className="section">
           <h3>Our Vision</h3>
-          <p>
-            To be the most trusted partner for businesses worldwide, enabling them to achieve their goals through cutting-edge technology and innovative solutions.
-          </p>
+          <p>To be the most trusted partner for businesses worldwide, enabling them to achieve their goals through cutting-edge technology and innovative solutions.</p>
           <ul>
             <li>Empower businesses with digital transformation.</li>
             <li>Foster a culture of innovation and creativity.</li>
@@ -202,5 +217,3 @@ const ManagerDashboard = () => {
 };
  
 export default ManagerDashboard;
- 
- 

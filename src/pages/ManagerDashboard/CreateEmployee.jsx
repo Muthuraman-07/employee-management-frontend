@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { authApi, api } from "../../service/api"; // Import API instances
 import "./CreateEmployee.css";
+import DatePicker from "react-datepicker";
+import { Modal, Button } from "react-bootstrap";
 
 const RegisterEmployee = () => {
   const [employee, setEmployee] = useState({
@@ -18,6 +20,9 @@ const RegisterEmployee = () => {
     joinedDate: ""
   });
 
+  const [showPassword, setShowPassword] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(""); // ✅ Error handling for existing employee
+  const [showErrorPopup, setShowErrorPopup] = useState(false); // ✅ Added state to control error modal
   useEffect(() => {
     // Fetch logged-in employee details and update managerId
     const fetchLoggedInEmployee = async () => {
@@ -31,6 +36,14 @@ const RegisterEmployee = () => {
 
     fetchLoggedInEmployee();
   }, []);
+
+  const isWeekday = (date) => {
+    return date.getDay() !== 0 && date.getDay() !== 6;
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
 
   const handleChange = (e) => {
     setEmployee({ ...employee, [e.target.name]: e.target.value });
@@ -106,19 +119,29 @@ const RegisterEmployee = () => {
       return;
     }
 
-    try {
-      const response = await authApi.post("/register", employee);
+     try {
+      await authApi.post("/register", employee);
       alert("Employee registered successfully!");
-      console.log(response.data);
     } catch (error) {
       console.error("Error registering employee:", error);
-      alert("Registration failed.");
+      
+      if (error.response && error.response.status === 500) {
+        setErrorMessage("❌ Employee already registered!");
+        setShowErrorPopup(true); // ✅ Show error modal when 500 occurs
+      } else {
+        setErrorMessage("❌ Registration failed. Please try again.");
+        setShowErrorPopup(true);
+      }
     }
   };
 
   return (
     <div className="container mt-5">
       <h2 className="mb-4 text-center">Register Employee</h2>
+
+     {/* ✅ Show error message if Employee Already Registered */}
+     {errorMessage && <p className="text-danger text-center fw-bold">{errorMessage}</p>}
+
       <form className="card p-4 shadow-lg" onSubmit={handleSubmit}>
         <div className="row">
           <div className="col-md-6 mb-3">
@@ -143,7 +166,12 @@ const RegisterEmployee = () => {
           </div>
           <div className="col-md-6 mb-3">
             <label className="form-label">Password</label>
-            <input type="password" className="form-control" name="password" onChange={handleChange} required />
+            <div className="input-group">
+              <input type={showPassword ? "text" : "password"} className="form-control" name="password" onChange={handleChange} required />
+              <button type="button" className="btn btn-outline-secondary" onClick={togglePasswordVisibility}>
+                {showPassword ? "👁 Hide" : "🔍 Show"}
+              </button>
+            </div>
           </div>
           <div className="col-md-6 mb-3">
             <label className="form-label">Email</label>
@@ -162,19 +190,43 @@ const RegisterEmployee = () => {
             <input type="text" className="form-control" name="shiftId" onChange={handleChange} required />
           </div>
           <div className="col-md-6 mb-3">
-            <label className="form-label">Joined Date</label>
-            <input type="date" className="form-control" name="joinedDate" onChange={handleChange} required />
+  <label className="form-label">Joined Date</label>
+  <div className="input-group">
+    <span className="input-group-text"><i className="bi bi-calendar"></i></span> {/* ✅ Bootstrap Calendar Icon */}
+    <DatePicker
+      selected={employee.joinedDate}
+      onChange={(date) => setEmployee({ ...employee, joinedDate: date })}
+      filterDate={isWeekday} 
+      dateFormat="yyyy-MM-dd"
+      className="form-control"
+      maxDate={new Date()} // ✅ Prevent selection of future dates
+      required
+    />
+  </div>
+
           </div>
           <div className="col-md-6 mb-3">
-            <label className="form-label">Role</label>
-            <select className="form-select" name="role" onChange={handleChange} required>
-              <option value="ROLE_EMPLOYEE">Employee</option>
-              <option value="ROLE_MANAGER">Manager</option>
-            </select>
-          </div>
+  <label className="form-label">Role</label>
+  <select className="form-select" name="role" onChange={handleChange} required>
+    <option value="" disabled selected>Select Role</option> 
+    <option value="ROLE_EMPLOYEE">Employee</option>
+    <option value="ROLE_MANAGER">Manager</option>
+  </select>
+</div>
         </div>
         <button type="submit" className="btn btn-success w-100 mt-3">Register Employee</button>
       </form>
+
+      {/* ✅ Error Modal Popup */}
+      <Modal show={showErrorPopup} onHide={() => setShowErrorPopup(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Error</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="text-danger fw-bold">{errorMessage}</Modal.Body>
+        <Modal.Footer>
+          <Button variant="danger" onClick={() => setShowErrorPopup(false)}>Close</Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };

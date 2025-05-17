@@ -1,25 +1,36 @@
 import React, { useState } from "react";
-import { api } from "../../../service/api"; // Adjust path as needed
-import "bootstrap/dist/css/bootstrap.min.css"; // Ensure Bootstrap is included
+import DatePicker from "react-datepicker"; 
+import "react-datepicker/dist/react-datepicker.css"; 
+import { api } from "../../../service/api"; 
+import "bootstrap/dist/css/bootstrap.min.css"; 
 
 const UpdateShift = () => {
   const [shiftId, setShiftId] = useState("");
   const [shiftDetails, setShiftDetails] = useState({
-    shiftDate: "",
+    shiftDate: null,
     shiftStartTime: "",
     shiftEndTime: "",
   });
 
   const [message, setMessage] = useState("");
 
+  // ✅ Function to disable weekends in DatePicker
+  const isWeekday = (date) => {
+    const day = date.getDay();
+    return day !== 0 && day !== 6; // 0 = Sunday, 6 = Saturday
+  };
+
+  // ✅ Handles shift details input field updates
   const handleChange = (e) => {
     setShiftDetails({ ...shiftDetails, [e.target.name]: e.target.value });
   };
 
+  // ✅ Handles shift ID input updates separately
   const handleShiftIdChange = (e) => {
     setShiftId(e.target.value);
   };
 
+  // ✅ Handles form submission, validates data, and sends API request
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -29,11 +40,23 @@ const UpdateShift = () => {
     }
 
     try {
-      await api.put(`/shifts/update-shift-details/${shiftId}`, shiftDetails);
+      await api.put(`/shifts/update-shift-details/${shiftId}`, {
+        shiftDate: shiftDetails.shiftDate ? shiftDetails.shiftDate.toISOString().split("T")[0] : "",
+        shiftStartTime: `${shiftDetails.shiftStartTime}:00`,
+        shiftEndTime: `${shiftDetails.shiftEndTime}:00`,
+      });
+
       setMessage("Shift updated successfully!");
+      setShiftId("");
+      setShiftDetails({ shiftDate: null, shiftStartTime: "", shiftEndTime: "" });
     } catch (error) {
-      console.error("Error updating shift:", error);
-      setMessage("Failed to update shift. Please try again.");
+      console.error("❌ Error updating shift:", error);
+
+      if (error.response) {
+        setMessage(`Error: ${error.response.data.message || "Failed to update shift."}`);
+      } else {
+        setMessage("Network error: Unable to reach the server.");
+      }
     }
   };
 
@@ -41,20 +64,37 @@ const UpdateShift = () => {
     <div className="container mt-5 p-4 rounded shadow-lg bg-light">
       <h2 className="text-center text-dark border-bottom pb-3">Update Shift</h2>
 
-      <form onSubmit={handleSubmit} className="d-flex flex-column align-items-center">
-        <label className="fw-bold">Shift ID:</label>
-        <input type="number" name="shiftId" value={shiftId} onChange={handleShiftIdChange} required className="form-control w-50 mb-3"/>
+      <form onSubmit={handleSubmit} className="row g-3">
+        <div className="col-md-6">
+          <label className="fw-bold">Shift ID:</label>
+          <input type="number" name="shiftId" value={shiftId} onChange={handleShiftIdChange} required className="form-control"/>
+        </div>
 
-        <label className="fw-bold">Shift Date:</label>
-        <input type="date" name="shiftDate" value={shiftDetails.shiftDate} onChange={handleChange} required className="form-control w-50 mb-3"/>
+        <div className="col-md-6">
+          <label className="fw-bold">Shift Date:</label>
+          <DatePicker
+            selected={shiftDetails.shiftDate}
+            onChange={(date) => setShiftDetails({ ...shiftDetails, shiftDate: date })}
+            filterDate={isWeekday} 
+            dateFormat="yyyy-MM-dd"
+            className="form-control"
+            required
+          />
+        </div>
 
-        <label className="fw-bold">Shift Start Time:</label>
-        <input type="time" name="shiftStartTime" value={shiftDetails.shiftStartTime} onChange={handleChange} required className="form-control w-50 mb-3"/>
+        <div className="col-md-6">
+          <label className="fw-bold">Shift Start Time:</label>
+          <input type="time" name="shiftStartTime" value={shiftDetails.shiftStartTime} onChange={handleChange} required className="form-control"/>
+        </div>
 
-        <label className="fw-bold">Shift End Time:</label>
-        <input type="time" name="shiftEndTime" value={shiftDetails.shiftEndTime} onChange={handleChange} required className="form-control w-50 mb-3"/>
+        <div className="col-md-6">
+          <label className="fw-bold">Shift End Time:</label>
+          <input type="time" name="shiftEndTime" value={shiftDetails.shiftEndTime} onChange={handleChange} required className="form-control"/>
+        </div>
 
-        <button type="submit" className="btn btn-warning fw-bold mt-3">Update Shift</button>
+        <div className="col-12 text-center">
+          <button type="submit" className="btn btn-warning fw-bold mt-3">Update Shift</button>
+        </div>
       </form>
 
       {message && <p className="text-center text-danger mt-3">{message}</p>}

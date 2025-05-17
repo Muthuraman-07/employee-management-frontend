@@ -1,13 +1,14 @@
 import React, { useState } from "react";
-import { Modal, Button, Form } from "react-bootstrap"; // ✅ Import Bootstrap components
+import { Modal, Button, Form } from "react-bootstrap"; 
 import { api } from "../../service/api";
 import { exportToPDF, exportToExcel } from "../../utils/exportUtils";
-import "bootstrap/dist/css/bootstrap.min.css"; // ✅ Ensure Bootstrap is included
+import "bootstrap/dist/css/bootstrap.min.css"; 
 
 const LeaveReports = () => {
   const [leaveData, setLeaveData] = useState([]);
-  const [showModal, setShowModal] = useState(false); // ✅ Modal visibility state
-  const [employeeId, setEmployeeId] = useState(""); // ✅ Store input value
+  const [showModal, setShowModal] = useState(false); 
+  const [employeeId, setEmployeeId] = useState(""); 
+  const [showHeaders, setShowHeaders] = useState(false); // ✅ Track header visibility
 
   const handleClose = () => setShowModal(false);
   const handleShow = () => setShowModal(true);
@@ -20,13 +21,12 @@ const LeaveReports = () => {
 
     try {
       const response = await api.get(`leaveBalance/leave-report/${employeeId}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("jwtToken")}`, // ✅ Ensure JWT Token is sent
-        },
+        headers: { Authorization: `Bearer ${localStorage.getItem("jwtToken")}` },
       });
 
       setLeaveData(response.data);
-      handleClose(); // ✅ Close modal after fetching data
+      setShowHeaders(true); // ✅ Show headers after clicking "Generate Report"
+      handleClose();
     } catch (error) {
       console.error("Error fetching leave data:", error);
       alert("Failed to fetch leave report. Please try again.");
@@ -68,25 +68,23 @@ const LeaveReports = () => {
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={handleClose}>
-            Cancel
-          </Button>
-          <Button variant="primary" onClick={generateLeaveReport}>
-            Generate
-          </Button>
+          <Button variant="secondary" onClick={handleClose}>Cancel</Button>
+          <Button variant="primary" onClick={generateLeaveReport}>Generate</Button>
         </Modal.Footer>
       </Modal>
 
       <div className="table-responsive">
         <table id="leaveReport" className="table table-bordered table-striped">
-          <thead className="table-dark">
-            <tr>
-              <th>Employee ID</th>
-              <th>Leave Type</th>
-              <th>Used Leaves</th>
-              <th>Remaining Leaves</th>
-            </tr>
-          </thead>
+          {showHeaders && ( // ✅ Show headers **only** after clicking "Generate Report"
+            <thead className="table-dark">
+              <tr>
+                <th>Employee ID</th>
+                <th>Leave Type</th>
+                <th>Used Leaves</th>
+                <th>Remaining Leaves</th>
+              </tr>
+            </thead>
+          )}
           <tbody>
             {leaveData.map((leave, index) => (
               <tr key={index}>
