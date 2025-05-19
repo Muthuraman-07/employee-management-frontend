@@ -3,14 +3,22 @@ import { api } from "../../../service/api";
 import "bootstrap/dist/css/bootstrap.min.css"; // Ensure Bootstrap is included
 
 const LeaveBalance = () => {
+  // State to store the employee ID
   const [employeeId, setEmployeeId] = useState(null);
+  // State to store leave balances
   const [leaveBalances, setLeaveBalances] = useState([]);
+  // State to handle loading state
   const [loading, setLoading] = useState(true);
+  // State to store error messages
   const [error, setError] = useState("");
 
-  const username = localStorage.getItem("username"); // Fetch username from localStorage
+  // Retrieve username from localStorage
+  const username = localStorage.getItem("username");
 
   useEffect(() => {
+    /**
+     * Fetch the employee ID based on the username stored in localStorage.
+     */
     const fetchEmployeeId = async () => {
       try {
         if (!username) {
@@ -24,11 +32,12 @@ const LeaveBalance = () => {
         if (response.data && response.data.employeeId) {
           setEmployeeId(response.data.employeeId);
         } else {
+          console.error("Employee ID not found for the username.");
           setError("Employee ID not found.");
         }
       } catch (error) {
         console.error("Error fetching employee details:", error);
-        setError("Error fetching employee details.");
+        setError("Error fetching employee details. Please try again.");
       }
     };
 
@@ -36,6 +45,9 @@ const LeaveBalance = () => {
   }, [username]);
 
   useEffect(() => {
+    /**
+     * Fetch leave balances for the employee.
+     */
     const fetchLeaveBalances = async () => {
       if (!employeeId) return;
 
@@ -44,7 +56,7 @@ const LeaveBalance = () => {
         setLeaveBalances(Array.isArray(response.data) ? response.data : [response.data]);
       } catch (error) {
         console.error("Error fetching leave balances:", error);
-        setError("Error fetching leave balances.");
+        setError("Error fetching leave balances. Please try again.");
       } finally {
         setLoading(false);
       }

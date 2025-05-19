@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import DatePicker from "react-datepicker"; 
-import "react-datepicker/dist/react-datepicker.css"; 
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import { api } from "../../../service/api";
-import "./CreateShift.css"; 
+import "./CreateShift.css";
 
 const CreateShift = () => {
   // ✅ Initializing state for shift details
@@ -13,6 +13,7 @@ const CreateShift = () => {
     shiftEndTime: "",
   });
 
+  // State to store success or error messages
   const [message, setMessage] = useState("");
 
   /**
@@ -41,60 +42,102 @@ const CreateShift = () => {
 
     // ✅ Input validation to ensure no empty fields
     if (!shift.shiftId || !shift.shiftDate || !shift.shiftStartTime || !shift.shiftEndTime) {
-      setMessage("All fields are required.");
+      setMessage("⚠️ All fields are required.");
+      return;
+    }
+
+    // ✅ Validate that the start time is earlier than the end time
+    if (shift.shiftStartTime >= shift.shiftEndTime) {
+      setMessage("⚠️ Shift start time must be earlier than shift end time.");
       return;
     }
 
     try {
-      await api.post("/shifts/create-shift", {
+      console.log("Submitting shift data:", shift);
+
+      // Send the shift data to the backend API
+      await api.post("/shift/create-shift", {
         shiftId: parseInt(shift.shiftId, 10), // Convert to integer for API request
         shiftDate: shift.shiftDate.toISOString().split("T")[0], // Convert Date object to YYYY-MM-DD format
         shiftStartTime: `${shift.shiftStartTime}:00`, // Standardize time format
         shiftEndTime: `${shift.shiftEndTime}:00`, // Standardize time format
       });
 
-      setMessage("Shift created successfully!");
+      setMessage("✅ Shift created successfully!");
       setShift({ shiftId: "", shiftDate: null, shiftStartTime: "", shiftEndTime: "" });
     } catch (error) {
       console.error("❌ Error creating shift:", error);
-      
+
       // ✅ Improved error handling to provide better feedback
       if (error.response) {
-        setMessage(`Error: ${error.response.data.message || "Failed to create shift."}`);
+        setMessage(`❌ Error: ${error.response.data.message || "Failed to create shift."}`);
       } else {
-        setMessage("Network error: Unable to reach the server.");
+        setMessage("❌ Network error: Unable to reach the server.");
       }
     }
   };
 
   return (
     <div className="create-shift-container">
-      <h2>Create a New Shift</h2>
-      <form onSubmit={handleSubmit}>
-        <label>Shift ID:</label>
-        <input type="number" name="shiftId" value={shift.shiftId} onChange={handleChange} required />
+      <h2 className="text-center mb-4">Create a New Shift</h2>
+      <form onSubmit={handleSubmit} className="form-container">
+        <div className="form-group">
+          <label className="form-label">Shift ID:</label>
+          <input
+            type="number"
+            name="shiftId"
+            value={shift.shiftId}
+            onChange={handleChange}
+            className="form-control"
+            required
+          />
+        </div>
 
-        <label>Shift Date:</label>
-        <DatePicker
-          selected={shift.shiftDate}
-          onChange={(date) => setShift({ ...shift, shiftDate: date })}
-          filterDate={isWeekday} // ✅ Disable weekends dynamically
-          dateFormat="yyyy-MM-dd"
-          className="form-control"
-          required
-        />
+        <div className="form-group">
+          <label className="form-label">Shift Date:</label>
+          <DatePicker
+            selected={shift.shiftDate}
+            onChange={(date) => setShift({ ...shift, shiftDate: date })}
+            filterDate={isWeekday} // ✅ Disable weekends dynamically
+            dateFormat="yyyy-MM-dd"
+            className="form-control"
+            required
+          />
+        </div>
 
-        <label>Shift Start Time:</label>
-        <input type="time" name="shiftStartTime" value={shift.shiftStartTime} onChange={handleChange} required />
+        <div className="form-group">
+          <label className="form-label">Shift Start Time:</label>
+          <input
+            type="time"
+            name="shiftStartTime"
+            value={shift.shiftStartTime}
+            onChange={handleChange}
+            className="form-control"
+            required
+          />
+        </div>
 
-        <label>Shift End Time:</label>
-        <input type="time" name="shiftEndTime" value={shift.shiftEndTime} onChange={handleChange} required />
+        <div className="form-group">
+          <label className="form-label">Shift End Time:</label>
+          <input
+            type="time"
+            name="shiftEndTime"
+            value={shift.shiftEndTime}
+            onChange={handleChange}
+            className="form-control"
+            required
+          />
+        </div>
 
-        <button type="submit">Create Shift</button>
+        <div className="button-container mt-4">
+          <button type="submit" className="btn btn-primary fw-bold">
+            Create Shift
+          </button>
+        </div>
       </form>
 
       {/* ✅ Display success or error messages */}
-      {message && <p className="alert">{message}</p>}
+      {message && <p className={`alert ${message.startsWith("✅") ? "alert-success" : "alert-danger"}`}>{message}</p>}
     </div>
   );
 };

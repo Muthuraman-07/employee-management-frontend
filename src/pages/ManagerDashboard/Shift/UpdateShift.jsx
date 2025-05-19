@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import DatePicker from "react-datepicker"; 
-import "react-datepicker/dist/react-datepicker.css"; 
-import { api } from "../../../service/api"; 
-import "bootstrap/dist/css/bootstrap.min.css"; 
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { api } from "../../../service/api";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 const UpdateShift = () => {
   const [shiftId, setShiftId] = useState("");
@@ -34,28 +34,42 @@ const UpdateShift = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Validate input fields
     if (!shiftId) {
-      setMessage("Shift ID is required.");
+      setMessage("⚠️ Shift ID is required.");
+      return;
+    }
+
+    if (!shiftDetails.shiftDate || !shiftDetails.shiftStartTime || !shiftDetails.shiftEndTime) {
+      setMessage("⚠️ All fields are required.");
+      return;
+    }
+
+    if (shiftDetails.shiftStartTime >= shiftDetails.shiftEndTime) {
+      setMessage("⚠️ Shift start time must be earlier than shift end time.");
       return;
     }
 
     try {
-      await api.put(`/shifts/update-shift-details/${shiftId}`, {
+      console.log("Updating shift with ID:", shiftId);
+
+      // Send PUT request to update shift details
+      await api.put(`/shift/update-shift-details/${shiftId}`, {
         shiftDate: shiftDetails.shiftDate ? shiftDetails.shiftDate.toISOString().split("T")[0] : "",
         shiftStartTime: `${shiftDetails.shiftStartTime}:00`,
         shiftEndTime: `${shiftDetails.shiftEndTime}:00`,
       });
 
-      setMessage("Shift updated successfully!");
+      setMessage("✅ Shift updated successfully!");
       setShiftId("");
       setShiftDetails({ shiftDate: null, shiftStartTime: "", shiftEndTime: "" });
     } catch (error) {
       console.error("❌ Error updating shift:", error);
 
       if (error.response) {
-        setMessage(`Error: ${error.response.data.message || "Failed to update shift."}`);
+        setMessage(`❌ Error: ${error.response.data.message || "Failed to update shift."}`);
       } else {
-        setMessage("Network error: Unable to reach the server.");
+        setMessage("❌ Network error: Unable to reach the server.");
       }
     }
   };
@@ -67,7 +81,14 @@ const UpdateShift = () => {
       <form onSubmit={handleSubmit} className="row g-3">
         <div className="col-md-6">
           <label className="fw-bold">Shift ID:</label>
-          <input type="number" name="shiftId" value={shiftId} onChange={handleShiftIdChange} required className="form-control"/>
+          <input
+            type="number"
+            name="shiftId"
+            value={shiftId}
+            onChange={handleShiftIdChange}
+            required
+            className="form-control"
+          />
         </div>
 
         <div className="col-md-6">
@@ -75,7 +96,7 @@ const UpdateShift = () => {
           <DatePicker
             selected={shiftDetails.shiftDate}
             onChange={(date) => setShiftDetails({ ...shiftDetails, shiftDate: date })}
-            filterDate={isWeekday} 
+            filterDate={isWeekday} // ✅ Disable weekends dynamically
             dateFormat="yyyy-MM-dd"
             className="form-control"
             required
@@ -84,20 +105,45 @@ const UpdateShift = () => {
 
         <div className="col-md-6">
           <label className="fw-bold">Shift Start Time:</label>
-          <input type="time" name="shiftStartTime" value={shiftDetails.shiftStartTime} onChange={handleChange} required className="form-control"/>
+          <input
+            type="time"
+            name="shiftStartTime"
+            value={shiftDetails.shiftStartTime}
+            onChange={handleChange}
+            required
+            className="form-control"
+          />
         </div>
 
         <div className="col-md-6">
           <label className="fw-bold">Shift End Time:</label>
-          <input type="time" name="shiftEndTime" value={shiftDetails.shiftEndTime} onChange={handleChange} required className="form-control"/>
+          <input
+            type="time"
+            name="shiftEndTime"
+            value={shiftDetails.shiftEndTime}
+            onChange={handleChange}
+            required
+            className="form-control"
+          />
         </div>
 
         <div className="col-12 text-center">
-          <button type="submit" className="btn btn-warning fw-bold mt-3">Update Shift</button>
+          <button type="submit" className="btn btn-warning fw-bold mt-3">
+            Update Shift
+          </button>
         </div>
       </form>
 
-      {message && <p className="text-center text-danger mt-3">{message}</p>}
+      {/* Display success or error messages */}
+      {message && (
+        <p
+          className={`text-center mt-3 ${
+            message.startsWith("✅") ? "text-success" : "text-danger"
+          }`}
+        >
+          {message}
+        </p>
+      )}
     </div>
   );
 };

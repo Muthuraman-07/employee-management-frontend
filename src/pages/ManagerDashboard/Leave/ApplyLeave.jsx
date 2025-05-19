@@ -5,15 +5,22 @@ import { api } from "../../../service/api";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const ApplyLeave = () => {
+  // State to store leave details
   const [leave, setLeave] = useState({ startDate: null, endDate: null, leaveType: "Vacation" });
+  // State to store the employee ID
   const [employeeId, setEmployeeId] = useState(null);
+  // Retrieve username from localStorage
   const username = localStorage.getItem("username");
 
   useEffect(() => {
+    /**
+     * Fetch the employee ID based on the username stored in localStorage.
+     */
     const fetchEmployeeId = async () => {
       try {
         if (!username) {
           console.error("No username found.");
+          alert("Username not found. Please log in again.");
           return;
         }
 
@@ -25,24 +32,35 @@ const ApplyLeave = () => {
           setEmployeeId(response.data.employeeId);
         } else {
           console.error("Employee ID not found for the username.");
+          alert("Employee ID not found. Please contact support.");
         }
       } catch (error) {
         console.error("Error fetching employee details:", error);
+        alert("Failed to fetch employee details. Please try again.");
       }
     };
 
     fetchEmployeeId();
   }, [username]);
 
-  // ✅ Disable Saturdays & Sundays in the calendar
+  /**
+   * Disable Saturdays & Sundays in the calendar.
+   * @param {Date} date - The selected date.
+   * @returns {boolean} - True if the date is a weekday, false otherwise.
+   */
   const isWeekday = (date) => {
     const day = date.getDay();
     return day !== 0 && day !== 6; // ✅ Allow only weekdays
   };
 
+  /**
+   * Handle the submission of the leave request form.
+   * @param {Object} e - The event object from the form submission.
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Validate form inputs
     if (!leave.startDate || !leave.endDate) {
       alert("Please select both start and end dates.");
       return;
@@ -63,12 +81,14 @@ const ApplyLeave = () => {
       return;
     }
 
+    // Format dates for the API request
     const formattedStartDate = leave.startDate.toISOString().split("T")[0] + "T09:00:00";
     const formattedEndDate = leave.endDate.toISOString().split("T")[0] + "T18:00:00";
 
     try {
       console.log({ ...leave, startDate: formattedStartDate, endDate: formattedEndDate });
 
+      // Submit leave request to the API
       await api.post(`/leave/apply-leave/${employeeId}`, {
         startDate: formattedStartDate,
         endDate: formattedEndDate,
@@ -78,6 +98,7 @@ const ApplyLeave = () => {
       alert("Leave request submitted successfully!");
     } catch (error) {
       console.error("Error applying leave:", error);
+      alert("Failed to submit leave request. Please try again.");
     }
   };
 
@@ -92,6 +113,7 @@ const ApplyLeave = () => {
               selected={leave.startDate}
               onChange={(date) => setLeave({ ...leave, startDate: date })}
               filterDate={isWeekday} // ✅ Disable weekends dynamically
+              minDate={new Date()} // ✅ Disable past dates
               dateFormat="yyyy-MM-dd"
               className="form-control"
               required
@@ -104,6 +126,7 @@ const ApplyLeave = () => {
               selected={leave.endDate}
               onChange={(date) => setLeave({ ...leave, endDate: date })}
               filterDate={isWeekday} // ✅ Disable weekends dynamically
+              minDate={leave.startDate || new Date()} // ✅ Ensure end date is not before start date
               dateFormat="yyyy-MM-dd"
               className="form-control"
               required
@@ -112,7 +135,13 @@ const ApplyLeave = () => {
 
           <div className="mb-3">
             <label className="form-label">Leave Type:</label>
-            <select className="form-select" name="leaveType" onChange={(e) => setLeave({ ...leave, leaveType: e.target.value })} value={leave.leaveType} required>
+            <select
+              className="form-select"
+              name="leaveType"
+              onChange={(e) => setLeave({ ...leave, leaveType: e.target.value })}
+              value={leave.leaveType}
+              required
+            >
               <option value="Vacation">Vacation</option>
               <option value="Sick Leave">Sick Leave</option>
               <option value="Casual Leave">Casual Leave</option>
@@ -120,8 +149,12 @@ const ApplyLeave = () => {
           </div>
 
           <div className="d-flex justify-content-center gap-3 mt-3">
-            <button type="submit" className="btn btn-success fw-bold">Submit Leave Request</button>
-            <button type="reset" className="btn btn-secondary fw-bold">Reset</button>
+            <button type="submit" className="btn btn-success fw-bold">
+              Submit Leave Request
+            </button>
+            <button type="reset" className="btn btn-secondary fw-bold">
+              Reset
+            </button>
           </div>
         </form>
       </div>

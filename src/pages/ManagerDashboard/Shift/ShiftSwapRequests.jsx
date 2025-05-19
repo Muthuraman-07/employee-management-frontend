@@ -41,7 +41,7 @@ const ShiftSwapRequests = () => {
     const fetchShiftRequests = async () => {
       try {
         console.log("Fetching pending shift swap requests...");
-        const response = await api.get(`shifts/request-status/${employeeId}`, {
+        const response = await api.get(`shift/request-status/${employeeId}`, {
           params: { status: "PENDING" },
           headers: {
             Authorization: `Bearer ${localStorage.getItem("jwtToken")}`, // ✅ Include JWT Token
@@ -63,11 +63,17 @@ const ShiftSwapRequests = () => {
     }
   }, [employeeId]);
 
+  /**
+   * Handle approval or rejection of a shift swap request.
+   * @param {number} requestId - The ID of the shift swap request.
+   * @param {number} approved - 1 for approval, 0 for rejection.
+   * @param {number} employeeId - The ID of the employee associated with the request.
+   */
   const handleAction = async (requestId, approved, employeeId) => {
     try {
       console.log(`Updating shift request ID: ${requestId}, Approved: ${approved}`);
 
-      await api.post("/shifts/approve-swap", null, { params: { requestId, approved } });
+      await api.post("/shift/approve-swap", null, { params: { requestId, approved } });
 
       // ✅ Save approval/rejection in local storage for employee notification
       localStorage.setItem(`shiftSwap_${employeeId}`, approved ? "APPROVED" : "REJECTED");
@@ -86,7 +92,6 @@ const ShiftSwapRequests = () => {
             : request
         )
       );
-
     } catch (error) {
       console.error("Error updating shift request:", error);
       setError("Failed to update shift request.");

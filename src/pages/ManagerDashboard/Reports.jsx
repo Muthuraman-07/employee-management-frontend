@@ -13,35 +13,38 @@ const Reports = () => {
       }}
     >
       <h2 className="mb-4 text-center fw-bold">Select Report Type</h2>
-      
+
+      {/* Buttons for navigating to different report types */}
       <div className="d-flex flex-column gap-3">
-        <button 
-          className="btn btn-light fw-bold shadow-sm" 
+        <button
+          className="btn btn-light fw-bold shadow-sm"
           onClick={() => navigate('/reports/employee')}
         >
           Employee Report
         </button>
-        
-        <button 
-          className="btn btn-light fw-bold shadow-sm" 
+
+        <button
+          className="btn btn-light fw-bold shadow-sm"
           onClick={() => navigate('/reports/attendance')}
         >
           Attendance Report
         </button>
-        
-        <button 
-          className="btn btn-light fw-bold shadow-sm" 
+
+        <button
+          className="btn btn-light fw-bold shadow-sm"
           onClick={() => navigate('/reports/shift')}
         >
           Shift Report
         </button>
-        
-        <button 
-          className="btn btn-light fw-bold shadow-sm" 
+
+        <button
+          className="btn btn-light fw-bold shadow-sm"
           onClick={() => navigate('/reports/leave')}
         >
           Leave Report
         </button>
+
+
       </div>
     </div>
   );

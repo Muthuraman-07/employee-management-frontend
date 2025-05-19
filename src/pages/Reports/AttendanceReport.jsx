@@ -8,7 +8,11 @@ const AttendanceReports = () => {
   const [employee, setEmployee] = useState("");
   const [reportData, setReportData] = useState([]);
   const [showHeaders, setShowHeaders] = useState(false); // ✅ Track header visibility
+  const [error, setError] = useState(""); // ✅ State for error messages
 
+  /**
+   * Generate the attendance report based on the selected report type.
+   */
   const generateReport = async () => {
     try {
       let response;
@@ -16,22 +20,32 @@ const AttendanceReports = () => {
       if (reportType === "all") {
         response = await api.get(`attendance/all-records`);
       } else if (reportType === "employee") {
+        if (!employee) {
+          setError("⚠️ Please enter a valid Employee ID.");
+          return;
+        }
         response = await api.get(`attendance/all-records/${employee}`);
       }
 
       setReportData(response.data);
       setShowHeaders(true); // ✅ Show table headers only after clicking "Generate Report"
+      setError(""); // ✅ Clear any previous errors
     } catch (error) {
       console.error("Error generating report:", error);
+      setError("❌ Failed to generate the report. Please try again.");
     }
   };
 
   return (
     <div className="container mt-4">
-      <h2 className="mb-4">Attendance Reports</h2>
+      <h2 className="mb-4 text-center">Attendance Reports</h2> {/* Centered heading */}
 
-      <div className="row mb-3">
-        <div className="col-md-4">
+      {/* Error Message */}
+      {error && <p className="text-danger fw-bold text-center">{error}</p>} {/* Centered error message */}
+
+      {/* Report Type and Employee ID Selection */}
+      <div className="row mb-4">
+        <div className="col-md-6">
           <label className="form-label">Report Type</label>
           <select
             className="form-select"
@@ -44,7 +58,7 @@ const AttendanceReports = () => {
         </div>
 
         {reportType === "employee" && (
-          <div className="col-md-4">
+          <div className="col-md-6">
             <label className="form-label">Employee ID</label>
             <input
               type="text"
@@ -57,21 +71,31 @@ const AttendanceReports = () => {
         )}
       </div>
 
-      <div className="mb-3">
+      {/* Action Buttons */}
+      <div className="d-flex justify-content-center mb-4">
         <button className="btn btn-primary me-2" onClick={generateReport}>
           Generate Report
         </button>
-        <button className="btn btn-primary me-2" onClick={() => exportToPDF("attendanceReport")}>
+        <button
+          className="btn btn-secondary me-2"
+          onClick={() => exportToPDF("attendanceReport")}
+          disabled={reportData.length === 0}
+        >
           Export to PDF
         </button>
-        <button className="btn btn-primary me-2" onClick={() => exportToExcel("attendanceReport")}>
+        <button
+          className="btn btn-secondary"
+          onClick={() => exportToExcel("attendanceReport")}
+          disabled={reportData.length === 0}
+        >
           Export to Excel
         </button>
       </div>
 
+      {/* Attendance Report Table */}
       <div className="table-responsive">
         <table id="attendanceReport" className="table table-bordered table-striped">
-          {showHeaders && ( // ✅ Show headers **only** after clicking "Generate Report"
+          {showHeaders && (
             <thead className="table-dark">
               <tr>
                 <th>Attendance ID</th>
@@ -89,8 +113,8 @@ const AttendanceReports = () => {
                 <td>{item.attendanceID}</td>
                 <td>{item.employeeId}</td>
                 <td>{item.isPresent ? "Yes" : "No"}</td>
-                <td>{new Date(item.clockInTime).toLocaleTimeString()}</td>
-                <td>{new Date(item.clockOutTime).toLocaleTimeString()}</td>
+                <td>{new Date(item.clockInTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</td>
+                <td>{new Date(item.clockOutTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</td>
                 <td>{item.workHours}</td>
               </tr>
             ))}

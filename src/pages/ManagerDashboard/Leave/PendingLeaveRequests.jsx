@@ -1,19 +1,27 @@
 import React, { useState, useEffect } from "react";
 import { api } from "../../../service/api";
-import "bootstrap/dist/css/bootstrap.min.css"; 
+import "bootstrap/dist/css/bootstrap.min.css";
 
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const PendingLeaveRequests = () => {
+  // State to store pending leave requests
   const [leaveRequests, setLeaveRequests] = useState([]);
+  // State to handle loading state
   const [loading, setLoading] = useState(true);
+  // State to store error messages
   const [error, setError] = useState("");
-  const [employeeId, setEmployeeId] = useState(null); 
+  // State to store the employee ID
+  const [employeeId, setEmployeeId] = useState(null);
 
-  const username = localStorage.getItem("username"); 
+  // Retrieve username from localStorage
+  const username = localStorage.getItem("username");
 
   useEffect(() => {
+    /**
+     * Fetch the employee ID based on the username stored in localStorage.
+     */
     const fetchEmployeeId = async () => {
       try {
         const response = await api.get(`employee/employee-username/${username}`, {
@@ -35,6 +43,9 @@ const PendingLeaveRequests = () => {
   }, [username]);
 
   useEffect(() => {
+    /**
+     * Fetch pending leave requests for the employee.
+     */
     const fetchLeaveRequests = async () => {
       try {
         const response = await api.get(`leave/leave-history-by-status/PENDING/${employeeId}`, {
@@ -58,7 +69,9 @@ const PendingLeaveRequests = () => {
   }, [employeeId]);
 
   useEffect(() => {
-    // ✅ Notify employee when logging in
+    /**
+     * Notify employee about leave request status on login.
+     */
     const savedStatus = localStorage.getItem(`leaveRequest_${employeeId}`);
     if (savedStatus) {
       toast.info(`Your leave request has been ${savedStatus.toLowerCase()}!`, {
@@ -66,11 +79,17 @@ const PendingLeaveRequests = () => {
         autoClose: 3000,
       });
 
-      // ✅ Remove notification after displaying
+      // Remove notification after displaying
       localStorage.removeItem(`leaveRequest_${employeeId}`);
     }
   }, [employeeId]);
 
+  /**
+   * Handle approval or rejection of a leave request.
+   * @param {number} leaveId - The ID of the leave request.
+   * @param {string} status - The new status of the leave request (APPROVED or REJECTED).
+   * @param {number} employeeId - The ID of the employee associated with the leave request.
+   */
   const handleAction = async (leaveId, status, employeeId) => {
     try {
       await api.patch(`leave/approve-leaveRequest/${leaveId}/${status}`, null, {
@@ -79,20 +98,20 @@ const PendingLeaveRequests = () => {
         },
       });
 
-      // ✅ Save status for employee notification
-      localStorage.setItem(`leaveRequest_${employeeId}`, status === "APPROVED" ? "APPROVED" : "REJECTED");
+      // Save status for employee notification
+      localStorage.setItem(`leaveRequest_${employeeId}`, status);
 
       toast.success(`Leave request ${status.toLowerCase()}!`, {
         position: "top-right",
         autoClose: 3000,
       });
 
+      // Update the status of the leave request in the UI
       setLeaveRequests((prevRequests) =>
         prevRequests.map((request) =>
           request.leaveId === leaveId ? { ...request, status } : request
         )
       );
-
     } catch (error) {
       console.error("Error updating leave request:", error);
       setError("Failed to update leave request.");
@@ -136,14 +155,22 @@ const PendingLeaveRequests = () => {
                       <td>{request.leaveType}</td>
                       <td>{new Date(request.startDate).toLocaleDateString()}</td>
                       <td>{new Date(request.endDate).toLocaleDateString()}</td>
-                      <td className={request.status === "APPROVED" ? "text-success fw-bold" : "text-warning fw-bold"}>
+                      <td
+                        className={
+                          request.status === "APPROVED"
+                            ? "text-success fw-bold"
+                            : request.status === "REJECTED"
+                            ? "text-danger fw-bold"
+                            : "text-warning fw-bold"
+                        }
+                      >
                         {request.status}
                       </td>
                       <td>
                         <button
                           className="btn btn-success fw-bold"
                           onClick={() => handleAction(request.leaveId, "APPROVED", request.employeeId)}
-                          disabled={request.status === "APPROVED"} 
+                          disabled={request.status === "APPROVED"}
                         >
                           Approve
                         </button>
@@ -152,7 +179,7 @@ const PendingLeaveRequests = () => {
                         <button
                           className="btn btn-danger fw-bold"
                           onClick={() => handleAction(request.leaveId, "REJECTED", request.employeeId)}
-                          disabled={request.status === "REJECTED"} 
+                          disabled={request.status === "REJECTED"}
                         >
                           Reject
                         </button>

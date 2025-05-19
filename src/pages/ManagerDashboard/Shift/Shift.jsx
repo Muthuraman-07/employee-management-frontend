@@ -6,34 +6,45 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import "./Shift.css";
 
 const Shift = () => {
+  // State to control the visibility of the delete shift modal
   const [showDeletePopup, setShowDeletePopup] = useState(false);
+  // State to store the Shift ID entered by the user
   const [shiftId, setShiftId] = useState("");
   const navigate = useNavigate();
   const employeeId = localStorage.getItem("employeeId");
 
+  /**
+   * Handle the display of the delete shift modal.
+   */
   const handleDeletePopup = () => {
     setShowDeletePopup(true);
   };
 
+  /**
+   * Confirm and delete the shift based on the entered Shift ID.
+   */
   const confirmDeleteShift = async () => {
+    // Validate the Shift ID input
     if (!shiftId || isNaN(shiftId)) {
-      alert("Please enter a valid Shift ID.");
+      alert("⚠️ Please enter a valid Shift ID.");
       return;
     }
 
     try {
-      await api.delete(`shifts/delete-shift/${shiftId}`, {
+      console.log(`Attempting to delete shift with ID: ${shiftId}`);
+      // Send DELETE request to the API
+      await api.delete(`shift/delete-shift/${shiftId}`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("jwtToken")}`, 
+          Authorization: `Bearer ${localStorage.getItem("jwtToken")}`, // Include JWT token for authentication
         },
       });
 
-      alert(`Shift ID ${shiftId} has been deleted successfully!`);
+      alert(`✅ Shift ID ${shiftId} has been deleted successfully!`);
       console.log(`Shift ${shiftId} deleted.`);
-      setShowDeletePopup(false);
+      setShowDeletePopup(false); // Close the modal after successful deletion
     } catch (error) {
-      console.error("Error deleting shift:", error.response?.data || error.message);
-      alert("Failed to delete shift. Please try again.");
+      console.error("❌ Error deleting shift:", error.response?.data || error.message);
+      alert("❌ Failed to delete shift. Please try again.");
     }
   };
 

@@ -8,9 +8,12 @@ const EmployeeReports = () => {
   const [error, setError] = useState("");
   const [showHeaders, setShowHeaders] = useState(false); // ✅ Tracks header visibility
 
-  const username = localStorage.getItem("username"); 
+  const username = localStorage.getItem("username");
 
   useEffect(() => {
+    /**
+     * Fetch the employee ID of the logged-in user.
+     */
     const fetchEmployeeId = async () => {
       try {
         if (!username) throw new Error("No username found in local storage.");
@@ -29,6 +32,9 @@ const EmployeeReports = () => {
     fetchEmployeeId();
   }, [username]);
 
+  /**
+   * Fetch all employee reports managed by the logged-in manager.
+   */
   const fetchEmployeeReports = async () => {
     try {
       if (!employeeId) throw new Error("Employee ID not available yet.");
@@ -39,6 +45,7 @@ const EmployeeReports = () => {
 
       setEmployeeData(response.data);
       setShowHeaders(true); // ✅ Show table headers when data is loaded
+      setError(""); // ✅ Clear any previous errors
     } catch (err) {
       console.error("Error fetching employee reports:", err);
       setError("Failed to load employee reports. Please try again.");
@@ -51,20 +58,31 @@ const EmployeeReports = () => {
         Employee Reports
       </h2>
 
+      {/* Action Buttons */}
       <div className="mb-5 d-flex justify-content-center align-items-center flex-wrap gap-2">
         <button className="btn btn-primary me-2 text-nowrap" onClick={fetchEmployeeReports}>
           Generate Report
         </button>
-        <button className="btn btn-primary me-2 text-nowrap" onClick={() => exportToPDF("employeeReport")}>
+        <button
+          className="btn btn-primary me-2 text-nowrap"
+          onClick={() => exportToPDF("employeeReport")}
+          disabled={employeeData.length === 0} // ✅ Disable if no data
+        >
           Export to PDF
         </button>
-        <button className="btn btn-primary me-2 text-nowrap" onClick={() => exportToExcel("employeeReport")}>
+        <button
+          className="btn btn-primary me-2 text-nowrap"
+          onClick={() => exportToExcel("employeeReport")}
+          disabled={employeeData.length === 0} // ✅ Disable if no data
+        >
           Export to Excel
         </button>
       </div>
 
+      {/* Error Message */}
       {error && <p className="text-danger">{error}</p>}
 
+      {/* Employee Report Table */}
       <div className="table-responsive">
         <table id="employeeReport" className="table table-bordered table-striped">
           {showHeaders && ( // ✅ Show headers only after clicking "Generate Report"

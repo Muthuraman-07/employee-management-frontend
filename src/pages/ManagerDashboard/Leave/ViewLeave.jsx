@@ -3,14 +3,22 @@ import { api } from "../../../service/api"; // Adjust path as needed
 import "bootstrap/dist/css/bootstrap.min.css"; // Ensure Bootstrap is included
 
 const ViewLeave = () => {
+  // State to store the employee ID
   const [employeeId, setEmployeeId] = useState(null);
+  // State to store leave records
   const [leaveRecords, setLeaveRecords] = useState([]);
+  // State to handle loading state
   const [loading, setLoading] = useState(true);
+  // State to store error messages
   const [error, setError] = useState("");
 
-  const username = localStorage.getItem("username"); // Fetch username from localStorage
+  // Retrieve username from localStorage
+  const username = localStorage.getItem("username");
 
   useEffect(() => {
+    /**
+     * Fetch the employee ID based on the username stored in localStorage.
+     */
     const fetchEmployeeId = async () => {
       try {
         if (!username) {
@@ -40,6 +48,9 @@ const ViewLeave = () => {
   }, [username]);
 
   useEffect(() => {
+    /**
+     * Fetch leave records for the employee.
+     */
     const fetchLeaveRecords = async () => {
       if (!employeeId) return;
 
@@ -61,7 +72,11 @@ const ViewLeave = () => {
   if (loading) return <p className="text-center text-primary">Loading leave records...</p>;
   if (error) return <p className="text-center text-danger">{error}</p>;
 
-  // ✅ Extract only date from LocalDateTime
+  /**
+   * Extract only the date from a timestamp.
+   * @param {string} timestamp - The timestamp to extract the date from.
+   * @returns {string} - The extracted date in YYYY-MM-DD format.
+   */
   const extractDate = (timestamp) => {
     return timestamp ? new Date(timestamp).toISOString().split("T")[0] : "Pending"; // Extracts YYYY-MM-DD
   };
@@ -95,7 +110,15 @@ const ViewLeave = () => {
                   <td>{extractDate(leave.appliedDate)}</td>
                   <td>{extractDate(leave.startDate)}</td>
                   <td>{extractDate(leave.endDate)}</td>
-                  <td className={leave.status === "Approved" ? "text-success fw-bold" : "text-danger fw-bold"}>
+                  <td
+                    className={
+                      leave.status === "Approved"
+                        ? "text-success fw-bold"
+                        : leave.status === "Rejected"
+                        ? "text-danger fw-bold"
+                        : "text-warning fw-bold"
+                    }
+                  >
                     {leave.status}
                   </td>
                   <td>{leave.leaveType}</td>

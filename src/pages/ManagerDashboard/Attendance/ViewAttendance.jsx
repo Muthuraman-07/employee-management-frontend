@@ -3,19 +3,27 @@ import { api } from "../../../service/api"; // Adjust path as needed
 import "./ViewAttendance.css";
 
 const ViewAttendance = () => {
+  // State to store the employee ID
   const [employeeId, setEmployeeId] = useState(null);
+  // State to store attendance records
   const [attendanceRecords, setAttendanceRecords] = useState([]);
+  // State to handle loading state
   const [loading, setLoading] = useState(true);
+  // State to store error messages
   const [error, setError] = useState("");
 
-  const username = localStorage.getItem("username"); // Fetch username from localStorage
+  // Retrieve username from localStorage
+  const username = localStorage.getItem("username");
 
   useEffect(() => {
+    /**
+     * Fetch the employee ID based on the username stored in localStorage.
+     */
     const fetchEmployeeId = async () => {
       try {
         if (!username) {
           console.error("No username found.");
-          setError("Username not found.");
+          setError("Username not found. Please log in again.");
           setLoading(false);
           return;
         }
@@ -32,7 +40,9 @@ const ViewAttendance = () => {
         }
       } catch (error) {
         console.error("Error fetching employee details:", error);
-        setError("Error fetching employee details.");
+        setError("Error fetching employee details. Please try again.");
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -40,6 +50,9 @@ const ViewAttendance = () => {
   }, [username]);
 
   useEffect(() => {
+    /**
+     * Fetch attendance records for the employee.
+     */
     const fetchAttendanceRecords = async () => {
       if (!employeeId) return;
 
@@ -49,7 +62,7 @@ const ViewAttendance = () => {
         setAttendanceRecords(response.data);
       } catch (error) {
         console.error("Error fetching attendance records:", error);
-        setError("Error fetching attendance records.");
+        setError("Error fetching attendance records. Please try again.");
       } finally {
         setLoading(false);
       }
@@ -61,26 +74,34 @@ const ViewAttendance = () => {
   if (loading) return <p>Loading attendance records...</p>;
   if (error) return <p style={{ color: "red" }}>{error}</p>;
 
-  // ✅ **Updated function: Extracts only date from clockInTime**
+  /**
+   * Extract only the date from a timestamp.
+   * @param {string} timestamp - The timestamp to extract the date from.
+   * @returns {string} - The extracted date in YYYY-MM-DD format.
+   */
   const extractDate = (timestamp) => {
-    return new Date(timestamp).toISOString().split("T")[0]; // Extracts YYYY-MM-DD
+    return new Date(timestamp).toISOString().split("T")[0];
   };
 
-  // ✅ **Updated function: Extracts only time from timestamp**
+  /**
+   * Extract only the time from a timestamp.
+   * @param {string} timestamp - The timestamp to extract the time from.
+   * @returns {string} - The extracted time in HH:MM format.
+   */
   const extractTime = (timestamp) => {
-    return new Date(timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false }); // HH:MM format
+    return new Date(timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
   };
 
   return (
     <div className="attendance-container">
-      <h2>Attendance Records for Employee ID -  {employeeId || "Loading..."}</h2>
+      <h2>Attendance Records for Employee ID - {employeeId || "Loading..."}</h2>
       {attendanceRecords.length === 0 ? (
         <p>No attendance records found.</p>
       ) : (
         <table border="1">
           <thead>
             <tr>
-            <th>Attendance-Id</th>
+              <th>Attendance ID</th>
               <th>Date</th>
               <th>Clock-In Time</th>
               <th>Clock-Out Time</th>
@@ -91,10 +112,10 @@ const ViewAttendance = () => {
           <tbody>
             {attendanceRecords.map((record, index) => (
               <tr key={index}>
-                <td>{(record.attendanceID)}</td>
-                <td>{extractDate(record.clockInTime)}</td> {/* ✅ Extracted Date */}
-                <td>{extractTime(record.clockInTime)}</td> {/* ✅ Extracted Time */}
-                <td>{extractTime(record.clockOutTime)}</td> {/* ✅ Extracted Time */}
+                <td>{record.attendanceID}</td>
+                <td>{extractDate(record.clockInTime)}</td> {/* Extracted Date */}
+                <td>{extractTime(record.clockInTime)}</td> {/* Extracted Time */}
+                <td>{extractTime(record.clockOutTime)}</td> {/* Extracted Time */}
                 <td>{record.workHours}</td>
                 <td>{record.isPresent ? "Yes" : "No"}</td>
               </tr>
