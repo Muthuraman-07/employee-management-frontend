@@ -10,7 +10,7 @@ const ManagerDashboard = () => {
   const navigate = useNavigate();
   const [showDeletePopup, setShowDeletePopup] = useState(false);
   const [employeeId, setEmployeeId] = useState("");
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [warningMessage, setWarningMessage] = useState(""); // ✅ State for warning message
   const [showToast, setShowToast] = useState(false);
 

@@ -10,7 +10,7 @@ import "react-toastify/dist/ReactToastify.css";
 const EmployeeDashboard = () => {
   // State to store employee data
   const [data, setData] = useState({});
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // ✅ State to toggle sidebar
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true); // ✅ State to toggle sidebar
   // Retrieve username from local storage
   const username = localStorage.getItem("username");
   const navigate = useNavigate();

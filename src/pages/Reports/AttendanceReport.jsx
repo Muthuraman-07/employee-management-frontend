@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { api } from "../../service/api";
 import { exportToPDF, exportToExcel } from "../../utils/exportUtils";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -7,29 +7,56 @@ const AttendanceReports = () => {
   const [reportType, setReportType] = useState("all");
   const [employee, setEmployee] = useState("");
   const [reportData, setReportData] = useState([]);
-  const [showHeaders, setShowHeaders] = useState(false); // ✅ Track header visibility
-  const [error, setError] = useState(""); // ✅ State for error messages
+  const [showHeaders, setShowHeaders] = useState(false);
+  const [error, setError] = useState("");
+  const [managerId, setManagerId] = useState(null);
+
+  // ✅ Fetch employee ID (managerId) from the backend using the username
+  useEffect(() => {
+    const username = localStorage.getItem("username");
+    if (!username) {
+      setError("❌ Username not found in localStorage.");
+      return;
+    }
+
+    api.get(`/employee/employee-username/${username}`)
+      .then((response) => {
+        if (response.data && response.data.employeeId) {
+          setManagerId(response.data.employeeId); // ✅ Correct managerId
+        } else {
+          setError("❌ Employee ID not found.");
+        }
+      })
+      .catch((err) => {
+        console.error("Error fetching Employee ID:", err);
+        setError("❌ Failed to fetch Employee ID.");
+      });
+  }, []);
 
   /**
-   * Generate the attendance report based on the selected report type.
+   * ✅ Generate the attendance report using the correct managerId
    */
   const generateReport = async () => {
     try {
       let response;
-
+      
       if (reportType === "all") {
-        response = await api.get(`attendance/all-records`);
+        if (!managerId) {
+          setError("❌ Manager ID is required to fetch the report.");
+          return;
+        }
+        response = await api.get(`/attendance/all-records-manager/${managerId}`); // ✅ Correct API endpoint
       } else if (reportType === "employee") {
         if (!employee) {
           setError("⚠️ Please enter a valid Employee ID.");
           return;
         }
-        response = await api.get(`attendance/all-records/${employee}`);
+        response = await api.get(`/attendance/all-records/${employee}`);
       }
 
       setReportData(response.data);
-      setShowHeaders(true); // ✅ Show table headers only after clicking "Generate Report"
-      setError(""); // ✅ Clear any previous errors
+      setShowHeaders(true);
+      setError("");
     } catch (error) {
       console.error("Error generating report:", error);
       setError("❌ Failed to generate the report. Please try again.");
@@ -38,10 +65,10 @@ const AttendanceReports = () => {
 
   return (
     <div className="container mt-4">
-      <h2 className="mb-4 text-center">Attendance Reports</h2> {/* Centered heading */}
+      <h2 className="mb-4 text-center">Attendance Reports</h2>
 
       {/* Error Message */}
-      {error && <p className="text-danger fw-bold text-center">{error}</p>} {/* Centered error message */}
+      {error && <p className="text-danger fw-bold text-center">{error}</p>}
 
       {/* Report Type and Employee ID Selection */}
       <div className="row mb-4">
