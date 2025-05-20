@@ -21,6 +21,10 @@ const Attendance = () => {
   const [errorMessage, setErrorMessage] = useState("");
   // State to control the visibility of the error popup
   const [showErrorPopup, setShowErrorPopup] = useState(false);
+  // State to store success messages
+  const [successMessage, setSuccessMessage] = useState(""); // ✅ State for success message
+  // State to control the visibility of the success popup
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false); // ✅ State for success popup
   // Retrieve username from localStorage
   const username = localStorage.getItem("username");
 
@@ -94,7 +98,8 @@ const Attendance = () => {
       await api.post(`/attendance/attendanceRecords/${employeeId}`, newEntry);
       setEntries([...entries, newEntry]);
       setShowModal(false);
-      alert("✅ Attendance recorded successfully!");
+      setSuccessMessage("✅ Attendance recorded successfully!"); // ✅ Set success message
+      setShowSuccessPopup(true); // ✅ Show success popup
     } catch (error) {
       console.error("❌ Error saving attendance:", error);
 
@@ -218,6 +223,19 @@ const Attendance = () => {
         <Modal.Body className="text-danger fw-bold">{errorMessage}</Modal.Body>
         <Modal.Footer>
           <Button variant="danger" onClick={() => setShowErrorPopup(false)}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Success Modal Popup */}
+      <Modal show={showSuccessPopup} onHide={() => setShowSuccessPopup(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Success</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="text-success fw-bold">{successMessage}</Modal.Body>
+        <Modal.Footer>
+          <Button variant="success" onClick={() => setShowSuccessPopup(false)}>
             Close
           </Button>
         </Modal.Footer>

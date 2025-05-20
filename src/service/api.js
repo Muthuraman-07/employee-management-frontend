@@ -19,6 +19,12 @@ const setAuthHeader = (config) => {
   return config;
 };
 
+// Custom popup for errors (React context is required for Modal, so use window-based fallback)
+function showPopup(message) {
+  // Create a simple custom popup using window.confirm as a fallback
+  window.alert(message);
+}
+
 // Automatically handle response errors globally
 const handleResponseError = (error) => {
   if (error.response) {
@@ -32,11 +38,11 @@ const handleResponseError = (error) => {
     // Handle 403 Forbidden errors
     if (error.response.status === 403) {
       console.error("Access forbidden - insufficient permissions.");
-      alert("You do not have permission to perform this action.");
+      showPopup("You do not have permission to perform this action.");
     }
   } else if (error.request) {
     console.error("No response received from the server.");
-    alert("Network error: Unable to reach the server. Please try again later.");
+    showPopup("Network error: Unable to reach the server. Please try again later.");
   } else {
     console.error("Error in request setup:", error.message);
   }
@@ -52,5 +58,4 @@ authApi.interceptors.request.use(setAuthHeader, (error) => Promise.reject(error)
 api.interceptors.response.use((response) => response, handleResponseError);
 authApi.interceptors.response.use((response) => response, handleResponseError);
 
-// Correct exports
 export { authApi, api };

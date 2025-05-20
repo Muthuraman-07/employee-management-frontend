@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { api } from "../../service/api";
 import { useNavigate } from "react-router-dom";
+import { Modal, Button } from "react-bootstrap"; // Importing Modal from React Bootstrap
 import "bootstrap/dist/css/bootstrap.min.css"; // ✅ Bootstrap for styling
 import "./EditProfile.css"; // ✅ Custom CSS for layout improvements
 
@@ -11,9 +12,12 @@ const EditProfile = () => {
   const [updatedFields, setUpdatedFields] = useState([{ category: "", value: "", error: "" }]);
   // State to store error messages
   const [error, setError] = useState("");
-  // Retrieve username from localStorage
+  const [showModal, setShowModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
   const username = localStorage.getItem("username");
   const navigate = useNavigate();
+
+  const handleClose = () => setShowModal(false);
 
   useEffect(() => {
     /**
@@ -105,7 +109,8 @@ const EditProfile = () => {
     try {
       // Ensure there is at least one field to update
       if (!employee || updatedFields.length === 0) {
-        alert("Please add at least one field to update.");
+        setModalMessage("Please add at least one field to update.");
+setShowModal(true);
         return;
       }
 
@@ -125,15 +130,14 @@ const EditProfile = () => {
         },
       });
 
-      // Notify the user of success and navigate back to the profile page
-      alert("Profile updated successfully!");
+      setModalMessage("Profile updated successfully!");
+setShowModal(true);
       navigate("/profile");
     } catch (err) {
       // Log error details for debugging
       console.error("Error updating employee profile:", err);
-
-      // Display a user-friendly error message
-      setError(err.response?.data || "Failed to update profile.");
+setModalMessage(err.response?.data || "Failed to update profile.");
+setShowModal(true);
     }
   };
 
@@ -199,6 +203,19 @@ value={field.category}
       ) : (
         !error && <p className="text-center text-muted">Loading employee details...</p>
       )}
+
+      {/* Modal for displaying messages */}
+      <Modal show={showModal} onHide={handleClose}>
+        <Modal.Header closeButton>
+          <Modal.Title>Notification</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>{modalMessage}</Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleClose}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };

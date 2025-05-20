@@ -23,6 +23,9 @@ const RegisterEmployee = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState(""); // ✅ Error handling for existing employee
   const [showErrorPopup, setShowErrorPopup] = useState(false); // ✅ Added state to control error modal
+  const [successMessage, setSuccessMessage] = useState(""); // Add this for success popup
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false); // Add this for success popup
+
   useEffect(() => {
     // Fetch logged-in employee details and update managerId
     const fetchLoggedInEmployee = async () => {
@@ -59,75 +62,88 @@ const RegisterEmployee = () => {
 
     // Validation Rules
     if (employee.employeeId < 1) {
-      alert("Employee ID must be greater than zero.");
+      setErrorMessage("Employee ID must be greater than zero.");
+      setShowErrorPopup(true);
       return;
     }
 
     if (employee.managerId < 1) {
-      alert("Manager ID must be greater than zero.");
+      setErrorMessage("Manager ID must be greater than zero.");
+      setShowErrorPopup(true);
       return;
     }
 
     if (employee.username.length < 2 || employee.username.length > 50) {
-      alert("Username must be between 2 and 50 characters.");
+      setErrorMessage("Username must be between 2 and 50 characters.");
+      setShowErrorPopup(true);
       return;
     }
 
     if (!passwordRegex.test(employee.password)) {
-      alert("Password must contain at least one uppercase letter, one lowercase letter, and one number.");
+      setErrorMessage("Password must contain at least one uppercase letter, one lowercase letter, and one number.");
+      setShowErrorPopup(true);
       return;
     }
 
     if (employee.password.length < 8) {
-      alert("Password must be at least 8 characters long.");
+      setErrorMessage("Password must be at least 8 characters long.");
+      setShowErrorPopup(true);
       return;
     }
 
     if (employee.firstName.length < 2 || employee.firstName.length > 50) {
-      alert("First name must be between 2 and 50 characters.");
+      setErrorMessage("First name must be between 2 and 50 characters.");
+      setShowErrorPopup(true);
       return;
     }
 
     if (employee.lastName.length < 2 || employee.lastName.length > 50) {
-      alert("Last name must be between 2 and 50 characters.");
+      setErrorMessage("Last name must be between 2 and 50 characters.");
+      setShowErrorPopup(true);
       return;
     }
 
     if (!emailRegex.test(employee.email)) {
-      alert("Email should be valid.");
+      setErrorMessage("Email should be valid.");
+      setShowErrorPopup(true);
       return;
     }
 
     if (!phoneRegex.test(employee.phoneNumber)) {
-      alert("Phone number must be exactly 10 digits.");
+      setErrorMessage("Phone number must be exactly 10 digits.");
+      setShowErrorPopup(true);
       return;
     }
 
     if (employee.department.length < 2 || employee.department.length > 50) {
-      alert("Department must be between 2 and 50 characters.");
+      setErrorMessage("Department must be between 2 and 50 characters.");
+      setShowErrorPopup(true);
       return;
     }
 
     if (employee.role.length < 2 || employee.role.length > 50) {
-      alert("Role must be between 2 and 50 characters.");
+      setErrorMessage("Role must be between 2 and 50 characters.");
+      setShowErrorPopup(true);
       return;
     }
 
     const today = new Date().toISOString().split("T")[0];
     if (employee.joinedDate >= today) {
-      alert("Joined date must be in the past.");
+      setErrorMessage("Joined date must be in the past.");
+      setShowErrorPopup(true);
       return;
     }
 
-     try {
+    try {
       await authApi.post("/register", employee);
-      alert("Employee registered successfully!");
+      setSuccessMessage("Employee registered successfully!");
+      setShowSuccessPopup(true);
     } catch (error) {
       console.error("Error registering employee:", error);
-      
+
       if (error.response && error.response.status === 500) {
         setErrorMessage("❌ Employee already registered!");
-        setShowErrorPopup(true); // ✅ Show error modal when 500 occurs
+        setShowErrorPopup(true);
       } else {
         setErrorMessage("❌ Registration failed. Please try again.");
         setShowErrorPopup(true);
@@ -225,6 +241,17 @@ const RegisterEmployee = () => {
         <Modal.Body className="text-danger fw-bold">{errorMessage}</Modal.Body>
         <Modal.Footer>
           <Button variant="danger" onClick={() => setShowErrorPopup(false)}>Close</Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* ✅ Success Modal Popup */}
+      <Modal show={showSuccessPopup} onHide={() => setShowSuccessPopup(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Success</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="text-success fw-bold">{successMessage}</Modal.Body>
+        <Modal.Footer>
+          <Button variant="success" onClick={() => setShowSuccessPopup(false)}>Close</Button>
         </Modal.Footer>
       </Modal>
     </div>

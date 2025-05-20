@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { Modal, Button } from "react-bootstrap"; // ✅ Import Modal from React Bootstrap
 import { api } from "../../../service/api";
+import "bootstrap/dist/css/bootstrap.min.css";
 import "./CreateShift.css";
 
 const CreateShift = () => {
@@ -13,13 +15,11 @@ const CreateShift = () => {
     shiftEndTime: "",
   });
 
-  // State to store success or error messages
-  const [message, setMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState(""); // ✅ State for error messages
+  const [successMessage, setSuccessMessage] = useState(""); // ✅ State for success messages
+  const [showErrorPopup, setShowErrorPopup] = useState(false); // ✅ State to control error modal
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false); // ✅ State to control success modal
 
-  /**
-   * ✅ Function to disable selection of weekends in DatePicker
-   * Only allows Monday to Friday selection
-   */
   const isWeekday = (date) => {
     const day = date.getDay();
     return day !== 0 && day !== 6; // 0 = Sunday, 6 = Saturday
@@ -42,13 +42,15 @@ const CreateShift = () => {
 
     // ✅ Input validation to ensure no empty fields
     if (!shift.shiftId || !shift.shiftDate || !shift.shiftStartTime || !shift.shiftEndTime) {
-      setMessage("⚠️ All fields are required.");
+      setErrorMessage("⚠️ All fields are required.");
+setShowErrorPopup(true);
       return;
     }
 
     // ✅ Validate that the start time is earlier than the end time
     if (shift.shiftStartTime >= shift.shiftEndTime) {
-      setMessage("⚠️ Shift start time must be earlier than shift end time.");
+      setErrorMessage("⚠️ Shift start time must be earlier than shift end time.");
+setShowErrorPopup(true);
       return;
     }
 
@@ -63,17 +65,20 @@ const CreateShift = () => {
         shiftEndTime: `${shift.shiftEndTime}:00`, // Standardize time format
       });
 
-      setMessage("✅ Shift created successfully!");
+      setSuccessMessage("✅ Shift created successfully!");
+setShowSuccessPopup(true);
       setShift({ shiftId: "", shiftDate: null, shiftStartTime: "", shiftEndTime: "" });
     } catch (error) {
       console.error("❌ Error creating shift:", error);
 
       // ✅ Improved error handling to provide better feedback
       if (error.response) {
-        setMessage(`❌ Error: ${error.response.data.message || "Failed to create shift."}`);
+        setErrorMessage(`❌ Error: ${error.response.data.message || "Failed to create shift."}`);
       } else {
-        setMessage("❌ Network error: Unable to reach the server.");
+        setErrorMessage("❌ Network error: Unable to reach the server.");
       }
+
+      setShowErrorPopup(true);
     }
   };
 
@@ -136,8 +141,31 @@ const CreateShift = () => {
         </div>
       </form>
 
-      {/* ✅ Display success or error messages */}
-      {message && <p className={`alert ${message.startsWith("✅") ? "alert-success" : "alert-danger"}`}>{message}</p>}
+      {/* Error Modal */}
+      <Modal show={showErrorPopup} onHide={() => setShowErrorPopup(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Error</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="text-danger fw-bold">{errorMessage}</Modal.Body>
+        <Modal.Footer>
+          <Button variant="danger" onClick={() => setShowErrorPopup(false)}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Success Modal */}
+      <Modal show={showSuccessPopup} onHide={() => setShowSuccessPopup(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Success</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="text-success fw-bold">{successMessage}</Modal.Body>
+        <Modal.Footer>
+          <Button variant="success" onClick={() => setShowSuccessPopup(false)}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };
