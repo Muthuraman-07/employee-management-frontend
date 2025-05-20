@@ -75,7 +75,7 @@ const UpdateShift = () => {
   };
 
   return (
-    <div className="container mt-5 p-4 rounded shadow-lg bg-light">
+    <div className="container mt-5 p-5 rounded shadow-lg bg-light">
       <h2 className="text-center text-dark border-bottom pb-3">Update Shift</h2>
 
       <form onSubmit={handleSubmit} className="row g-3">
